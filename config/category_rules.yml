@@ -1,0 +1,55 @@
+rules:
+  # UK groceries
+  - name: uk_groceries
+    merchants: ["Waitrose", "Tesco", "Sainsbury's", "Asda", "Morrisons", "Lidl", "Aldi", "M&S Food"]
+    category: "Groceries"
+
+  # UK delivery
+  - name: uk_delivery
+    merchants: ["Uber Eats", "Deliveroo", "Just Eat"]
+    category: "Eating Out"
+
+  # Indian food delivery
+  - name: food_delivery_india
+    merchants: ["Swiggy", "Zomato"]
+    category: "Eating Out"
+
+  # Indian grocery & quick commerce
+  - name: grocery_india
+    merchants: ["BigBasket", "Blinkit", "Zepto", "Dunzo", "JioMart"]
+    category: "Groceries"
+
+  # Transport
+  - name: transport
+    merchants: ["Uber", "Ola", "Rapido", "IRCTC", "IndiGo", "Air India", "SpiceJet", "GoAir"]
+    category: "Transport"
+
+  # E-commerce / Shopping
+  - name: shopping_india
+    merchants: ["Amazon India", "Flipkart", "Meesho", "Nykaa", "Myntra", "Ajio", "Snapdeal"]
+    category: "Shopping"
+
+  # Streaming subscriptions
+  - name: streaming
+    merchants: ["Netflix", "Hotstar", "Spotify", "YouTube", "Amazon Prime", "Apple Music", "ZEE5", "SonyLIV"]
+    category: "Subscriptions"
+
+  # Food chains / dining
+  - name: dining_chains
+    merchants: ["McDonald's", "Domino's", "KFC", "Starbucks", "Burger King", "Pizza Hut", "Subway", "Chaayos", "Cafe Coffee Day"]
+    category: "Eating Out"
+
+  # UPI / Payment apps (usually transfers, not expenses)
+  - name: upi_transfers
+    merchants: ["PhonePe", "Paytm", "Google Pay"]
+    category: "Transfer"
+
+  # Banks / ATMs (usually transfers)
+  - name: banks
+    merchants: ["HDFC Bank", "ICICI Bank", "SBI", "Axis Bank", "Kotak Bank"]
+    category: "Transfer"
+
+fallback:
+  expense: "Uncategorized"
+  income: "Income"
+  transfer: "Transfer"

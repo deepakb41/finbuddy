@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background-color: #f8fafc;
+  color: #1e293b;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Dark mode body — triggered by .dark class on <html> */
+html.dark body {
+  background-color: #030712;
+  color: #f1f5f9;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Safe area for mobile notch/home bar */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Page enter animation */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Staggered children animation */
+.stagger > * {
+  opacity: 0;
+  animation: fadeInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 50ms; }
+.stagger > *:nth-child(3) { animation-delay: 100ms; }
+.stagger > *:nth-child(4) { animation-delay: 150ms; }
+.stagger > *:nth-child(5) { animation-delay: 200ms; }
+.stagger > *:nth-child(6) { animation-delay: 250ms; }
+
+/* Smooth shimmer for loading skeletons */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+html.dark .skeleton {
+  background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
+/* Dock navigation — sibling magnification */
+.dock-icon {
+  transition: width 150ms cubic-bezier(0.25, 1, 0.5, 1),
+              height 150ms cubic-bezier(0.25, 1, 0.5, 1),
+              margin-bottom 150ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+.dock-icon:hover + .dock-icon {
+  width: calc(var(--icon-size) * 1.33 + var(--dock-offset-right, 0px));
+  height: calc(var(--icon-size) * 1.33 + var(--dock-offset-right, 0px));
+  margin-bottom: calc(var(--icon-size) * 0.33);
+}
+.dock-icon:hover + .dock-icon + .dock-icon {
+  width: calc(var(--icon-size) * 1.17 + var(--dock-offset-right, 0px));
+  height: calc(var(--icon-size) * 1.17 + var(--dock-offset-right, 0px));
+  margin-bottom: calc(var(--icon-size) * 0.17);
+}
+.dock-icon:has(+ .dock-icon:hover) {
+  width: calc(var(--icon-size) * 1.33 + var(--dock-offset-left, 0px));
+  height: calc(var(--icon-size) * 1.33 + var(--dock-offset-left, 0px));
+  margin-bottom: calc(var(--icon-size) * 0.33);
+}
+.dock-icon:has(+ .dock-icon + .dock-icon:hover) {
+  width: calc(var(--icon-size) * 1.17 + var(--dock-offset-left, 0px));
+  height: calc(var(--icon-size) * 1.17 + var(--dock-offset-left, 0px));
+  margin-bottom: calc(var(--icon-size) * 0.17);
+}
+
+/* Tab switch animation */
+@keyframes tabIn {
+  from { opacity: 0; transform: translateX(8px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.animate-tab-in {
+  animation: tabIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Success pop animation */
+@keyframes popIn {
+  0%   { opacity: 0; transform: scale(0.8); }
+  70%  { transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+.animate-pop-in {
+  animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}

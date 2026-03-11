@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: finbuddy-api
+    runtime: docker
+    plan: free
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:////data/finance.db
+      - key: GROQ_API_KEY
+        sync: false
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USER
+        sync: false
+      - key: SMTP_PASS
+        sync: false
+    disk:
+      name: finbuddy-data
+      mountPath: /data
+      sizeGB: 1

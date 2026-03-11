@@ -1,0 +1,191 @@
+# UK merchants (existing data)
+"Waitrose":
+  - "WAITROSE"
+  - "Waitose"
+  - "Waitrose & Partners"
+
+"Tesco":
+  - "TESCO"
+  - "Tesco Express"
+  - "TESCO STORES"
+
+"Uber Eats":
+  - "UBER EATS"
+  - "UberEats"
+  - "Uber eats"
+  - "UBER EATS CO-OP"
+
+"Deliveroo":
+  - "DELIVEROO"
+  - "Deliveroo Wingstop"
+
+# Indian food delivery
+"Swiggy":
+  - "SWIGGY"
+  - "Swiggy Order"
+  - "SWIGGY BUNDL TECH"
+  - "Swiggy Instamart"
+  - "SWIGGY INSTAMART"
+
+"Zomato":
+  - "ZOMATO"
+  - "Zomato Order"
+  - "ZOMATO LIMITED"
+  - "ZOMATO MEDIA"
+
+# Indian grocery & quick commerce
+"BigBasket":
+  - "BIGBASKET"
+  - "BIGBASKET.COM"
+  - "INNOVATIVE RETAIL"
+  - "Big Basket"
+
+"Blinkit":
+  - "BLINKIT"
+  - "GROFERS"
+  - "Grofers India"
+  - "blinkit"
+
+"Zepto":
+  - "ZEPTO"
+  - "KiranaKart"
+  - "KIRANAKART"
+
+"Dunzo":
+  - "DUNZO"
+  - "Dunzo Digital"
+
+# Indian e-commerce
+"Amazon India":
+  - "AMAZON"
+  - "AMZN"
+  - "Amazon.in"
+  - "AMAZON SELLER"
+  - "Amazon Pay"
+  - "AMAZON PAY"
+
+"Flipkart":
+  - "FLIPKART"
+  - "Flipkart Internet"
+  - "FLIPKART INTERNET"
+  - "Flipkart Pay"
+
+"Meesho":
+  - "MEESHO"
+  - "Fashnear Technologies"
+
+"Nykaa":
+  - "NYKAA"
+  - "FSN E-Commerce"
+  - "Nykaa Fashion"
+
+# Indian transport
+"Ola":
+  - "OLA CABS"
+  - "ANI TECHNOLOGIES"
+  - "OLA MONEY"
+  - "Ola Electric"
+  - "OLA ELECTRIC"
+
+"Uber":
+  - "UBER"
+  - "Uber Trip"
+  - "UBER BV"
+  - "Uber India"
+
+"Rapido":
+  - "RAPIDO"
+  - "Roppen Transportation"
+
+"IRCTC":
+  - "IRCTC"
+  - "Indian Railway"
+  - "IRCTC eTicket"
+  - "IRCTC RAIL"
+  - "irctc"
+
+# Indian payment apps (UPI)
+"PhonePe":
+  - "PHONEPE"
+  - "Phone Pe"
+  - "PHONEPE PRIVATE"
+  - "PhonePe Payment"
+
+"Paytm":
+  - "PAYTM"
+  - "ONE97 COMMUNICATIONS"
+  - "Paytm Payments"
+  - "PAYTM PAYMENTS BANK"
+
+"Google Pay":
+  - "GOOGLE PAY"
+  - "GPay"
+  - "GOOGLEPAY"
+  - "Google Payment"
+
+# Indian banks
+"HDFC Bank":
+  - "HDFC BANK"
+  - "HDFC ATM"
+  - "HDFC CREDIT CARD"
+  - "hdfc bank"
+
+"ICICI Bank":
+  - "ICICI BANK"
+  - "ICICI ATM"
+  - "ICICI CREDIT CARD"
+
+"SBI":
+  - "STATE BANK"
+  - "SBI ATM"
+  - "STATE BANK OF INDIA"
+  - "SBI CARD"
+
+"Axis Bank":
+  - "AXIS BANK"
+  - "AXIS ATM"
+  - "AXIS CREDIT CARD"
+
+# Entertainment
+"Netflix":
+  - "NETFLIX"
+  - "Netflix.com"
+  - "NETFLIX.COM"
+
+"Hotstar":
+  - "HOTSTAR"
+  - "Disney+ Hotstar"
+  - "DISNEY HOTSTAR"
+  - "Star India"
+
+"Spotify":
+  - "SPOTIFY"
+  - "Spotify India"
+  - "SPOTIFY AB"
+
+"YouTube":
+  - "YOUTUBE"
+  - "Google YouTube"
+  - "GOOGLE YOUTUBE"
+
+# Food chains
+"McDonald's":
+  - "MCDONALDS"
+  - "McDonald's"
+  - "MCDONALD'S"
+  - "McD"
+
+"Domino's":
+  - "DOMINOS"
+  - "Domino's Pizza"
+  - "JUBILANT FOODWORKS"
+
+"KFC":
+  - "KFC"
+  - "Kentucky Fried"
+  - "DEVYANI INTERNATIONAL"
+
+"Starbucks":
+  - "STARBUCKS"
+  - "Starbucks Coffee"
+  - "TATA STARBUCKS"

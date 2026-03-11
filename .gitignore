@@ -1,0 +1,12 @@
+.venv/
+.env
+data/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+node_modules/
+config/google-service-account.json
+*.json.key

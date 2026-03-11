@@ -1,0 +1,29 @@
+pandas==2.2.3
+SQLAlchemy==2.0.36
+pydantic==2.10.3
+python-dotenv==1.0.1
+PyYAML==6.0.2
+
+openai==1.51.2
+groq>=0.9.0
+httpx<0.28.0
+tenacity==8.5.0
+
+streamlit==1.37.1
+plotly>=5.18.0
+
+# FastAPI backend
+fastapi>=0.115.0
+uvicorn>=0.30.0
+python-multipart>=0.0.9
+
+# PDF statement parsing
+pdfplumber>=0.11.0
+
+# Forecasting
+statsmodels>=0.14.0
+
+# Telegram bot
+python-telegram-bot>=20.7
+
+# Email parsing (stdlib imaplib used; no extra package needed)
