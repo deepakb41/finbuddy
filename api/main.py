@@ -48,6 +48,7 @@ app.add_middleware(
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
         "https://finbuddy.vercel.app",
+        "https://finbuddy-nine.vercel.app",
         "https://*.vercel.app",
     ],
     allow_credentials=True,
