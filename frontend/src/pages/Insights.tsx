@@ -40,6 +40,11 @@ export function Insights() {
     queryFn: () => api.insights.healthScore(),
   });
 
+  const { data: summary } = useQuery({
+    queryKey: ["insights-summary"],
+    queryFn: () => api.insights.summary(),
+  });
+
   const theme = useTheme();
   const accentColor = theme === "pink" ? "#c084fc" : theme === "dark" ? "#2dd4bf" : "#0d9488";
   const gridColor = theme === "dark" ? "#1f2937" : "#f1f5f9";
@@ -103,6 +108,16 @@ export function Insights() {
       })()
     : null;
 
+  const investBody = summary
+    ? (() => {
+        const surplus = summary.total_income - summary.total_expense;
+        if (surplus <= 0) return "Reduce expenses to free up money to invest.";
+        const investAmt = surplus * 0.2;
+        const annualReturn = investAmt * 12 * 0.12;
+        return `Invest 20% of your surplus (${symbol}${Math.round(investAmt).toLocaleString("en-IN")}/mo) and earn ~${symbol}${Math.round(annualReturn).toLocaleString("en-IN")} a year at 12% p.a.`;
+      })()
+    : null;
+
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-24">
       <div className="bg-white dark:bg-gray-900 px-4 pt-12 pb-4 shadow-sm border-b border-gray-100 dark:border-gray-800">
@@ -151,26 +166,27 @@ export function Insights() {
           )}
         </div>
 
-        {/* ── Smart Insight Cards (3-col) ────────────────────────── */}
+        {/* ── Smart Insight Cards (2×2) ──────────────────────────── */}
         <div>
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 px-1 mb-2">Smart Insights</h2>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {[
               { title: "Opportunity", icon: "💡", body: biggestOpportunity, loading: !categories },
               { title: "Anomaly", icon: "⚠️", body: anomalyAlert, loading: !categories },
               { title: "Progress", icon: "🎯", body: goalProgress, loading: !health },
+              { title: "Invest", icon: "📈", body: investBody, loading: !summary },
             ].map(({ title, icon, body, loading }) => (
-              <div key={title} className="bg-white dark:bg-gray-800 rounded-xl p-2.5 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-1 fin-card">
-                <div className="flex items-center gap-1">
-                  <span className="text-sm">{icon}</span>
-                  <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide leading-tight">{title}</p>
+              <div key={title} className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-1.5 fin-card">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-base">{icon}</span>
+                  <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide leading-tight">{title}</p>
                 </div>
                 {loading ? (
                   <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded animate-pulse w-3/4" />
                 ) : body ? (
-                  <p className="text-[11px] text-gray-700 dark:text-gray-200 leading-snug line-clamp-4">{body}</p>
+                  <p className="text-xs text-gray-700 dark:text-gray-200 leading-snug line-clamp-3">{body}</p>
                 ) : (
-                  <p className="text-[11px] text-gray-400 dark:text-gray-500">No data yet</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500">No data yet</p>
                 )}
               </div>
             ))}

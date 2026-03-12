@@ -46,16 +46,17 @@ function A2HSBanner() {
         <div className="flex items-start gap-3">
           <img src="/logo.png" alt="" className="w-10 h-10 rounded-xl flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-800 dark:text-gray-100">Add FinBuddy to your home screen</p>
+            <p className="text-sm font-bold text-gray-800 dark:text-gray-100">Get the full app experience</p>
             {isIOS ? (
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
-                Tap the <span className="font-semibold text-teal-600 dark:text-teal-400">Share</span> button{" "}
-                <span className="text-base">⎙</span> at the bottom of Safari, then tap{" "}
+                For a native app feel with no browser bars — tap{" "}
+                <span className="font-semibold text-teal-600 dark:text-teal-400">Share</span>{" "}
+                <span className="text-base">⎙</span> in Safari, then{" "}
                 <span className="font-semibold text-teal-600 dark:text-teal-400">"Add to Home Screen"</span>
               </p>
             ) : (
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                Install as an app for faster access
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
+                Add to your home screen for a native app feel — no browser bars, faster access, works offline.
               </p>
             )}
           </div>
