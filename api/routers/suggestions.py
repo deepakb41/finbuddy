@@ -185,6 +185,7 @@ def accept_suggestion(
             type=s.tx_type,
             category=s.category,
             status="processed",
+            user_id=user_id or s.user_id,
         )
         session.add(tx)
         s.status = "accepted"

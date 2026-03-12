@@ -7,6 +7,7 @@ class Transaction(Base):
     __tablename__ = "transactions"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
 
     transaction_id: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     date: Mapped[datetime] = mapped_column(Date, index=True)
@@ -31,7 +32,8 @@ class Budget(Base):
     __tablename__ = "budgets"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    category: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    user_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    category: Mapped[str] = mapped_column(String(64), index=True)
     monthly_limit: Mapped[float] = mapped_column(Numeric(12, 2))
     currency: Mapped[str] = mapped_column(String(8), default="GBP")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

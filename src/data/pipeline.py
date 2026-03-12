@@ -89,6 +89,7 @@ def ingest_from_form(
     tx_type: str,
     notes: str,
     category: str,
+    user_id: int | None = None,
     aliases_path: str = "config/merchants_aliases.yml",
     category_rules_path: str = "config/category_rules.yml",
 ) -> str:
@@ -118,6 +119,7 @@ def ingest_from_form(
             category=category,
             notes=notes,
             status="processed",
+            user_id=user_id,
         ))
         session.commit()
 

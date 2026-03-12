@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from sqlalchemy import select, update, text
 from sqlalchemy.orm import Session
 
-from api.deps import get_db
+from api.deps import get_db, get_current_user_id
 from src.data.models import Transaction
 from src.data.pipeline import ingest_from_form
 from src.insights.summaries import recent_transactions, known_merchants
@@ -53,7 +53,10 @@ class TransactionOut(BaseModel):
 # ── Endpoints ──────────────────────────────────────────────────────────────────
 
 @router.post("", status_code=201)
-def create_transaction(body: TransactionCreate):
+def create_transaction(
+    body: TransactionCreate,
+    user_id: int = Depends(get_current_user_id),
+):
     """Add a single transaction (from form / bot / voice)."""
     tx_id = ingest_from_form(
         date=body.date,
@@ -63,6 +66,7 @@ def create_transaction(body: TransactionCreate):
         tx_type=body.tx_type,
         notes=body.notes,
         category=body.category,
+        user_id=user_id,
     )
     return {"transaction_id": tx_id, "status": "created"}
 
@@ -74,9 +78,10 @@ def list_transactions(
     search: Optional[str] = Query(None),
     limit: int = Query(200, le=1000),
     db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
 ):
     """List transactions with optional filters."""
-    rows = recent_transactions(limit=limit)
+    rows = recent_transactions(limit=limit, user_id=user_id)
     result = []
     for r in rows:
         tx = {
@@ -110,10 +115,14 @@ def patch_transaction(
     transaction_id: str,
     body: TransactionPatch,
     db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
 ):
     """Update category, notes, or merchant_normalized on a transaction."""
     tx = db.execute(
-        select(Transaction).where(Transaction.transaction_id == transaction_id)
+        select(Transaction).where(
+            Transaction.transaction_id == transaction_id,
+            Transaction.user_id == user_id,
+        )
     ).scalar_one_or_none()
 
     if not tx:
@@ -132,10 +141,17 @@ def patch_transaction(
 
 
 @router.delete("/{transaction_id}")
-def delete_transaction(transaction_id: str, db: Session = Depends(get_db)):
+def delete_transaction(
+    transaction_id: str,
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
     """Soft-delete a transaction by setting status to 'deleted'."""
     tx = db.execute(
-        select(Transaction).where(Transaction.transaction_id == transaction_id)
+        select(Transaction).where(
+            Transaction.transaction_id == transaction_id,
+            Transaction.user_id == user_id,
+        )
     ).scalar_one_or_none()
 
     if not tx:
@@ -147,6 +163,6 @@ def delete_transaction(transaction_id: str, db: Session = Depends(get_db)):
 
 
 @router.get("/meta/merchants")
-def get_merchants():
+def get_merchants(user_id: int = Depends(get_current_user_id)):
     """Return known merchant names for autocomplete."""
-    return {"merchants": known_merchants(limit=100)}
+    return {"merchants": known_merchants(limit=100, user_id=user_id)}
