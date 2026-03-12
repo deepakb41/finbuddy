@@ -9,6 +9,8 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from fastapi import APIRouter, HTTPException, status
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
 from jose import jwt
 from pydantic import BaseModel
 from sqlalchemy import select, delete
@@ -18,7 +20,8 @@ from src.data.models import User, OTPRequest
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
-SECRET_KEY = os.getenv("JWT_SECRET", "finbuddy-dev-secret-change-in-production")
+SECRET_KEY       = os.getenv("JWT_SECRET", "finbuddy-dev-secret-change-in-production")
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
 ALGORITHM = "HS256"
 TOKEN_EXPIRE_DAYS = 90
 OTP_EXPIRE_MINUTES = 10
@@ -209,6 +212,46 @@ def verify_otp(body: OTPVerifyBody):
             user = User(email=contact, password_hash="")
             session.add(user)
 
+        session.commit()
+        session.refresh(user)
+        token = _make_token(user.id)
+
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {"id": user.id, "email": user.email},
+    }
+
+
+# ── Google Sign-In ────────────────────────────────────────────────────────────
+
+class GoogleSignInBody(BaseModel):
+    credential: str  # Google ID token from frontend
+
+
+@router.post("/google")
+def google_signin(body: GoogleSignInBody):
+    if not GOOGLE_CLIENT_ID:
+        raise HTTPException(500, "Google sign-in is not configured on this server")
+
+    try:
+        idinfo = google_id_token.verify_oauth2_token(
+            body.credential,
+            google_requests.Request(),
+            GOOGLE_CLIENT_ID,
+        )
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, f"Invalid Google token: {exc}")
+
+    email = idinfo.get("email", "").strip().lower()
+    if not email:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "No email in Google token")
+
+    with SessionLocal() as session:
+        user = session.execute(select(User).where(User.email == email)).scalar_one_or_none()
+        if not user:
+            user = User(email=email, password_hash="")
+            session.add(user)
         session.commit()
         session.refresh(user)
         token = _make_token(user.id)

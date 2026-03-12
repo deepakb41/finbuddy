@@ -11,6 +11,7 @@ interface AuthContextValue {
   isAuthed: boolean;
   requestOTP: (contact: string) => Promise<{ contact_type: string; expires_in_minutes: number }>;
   verifyOTP: (contact: string, otp: string) => Promise<AuthUser>;
+  googleSignIn: (credential: string) => Promise<AuthUser>;
   logout: () => void;
   getToken: () => string | null;
 }
@@ -54,6 +55,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return data.user as AuthUser;
   }, []);
 
+  const googleSignIn = useCallback(async (credential: string) => {
+    const res = await fetch(`${BASE}/auth/google`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ credential }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Google sign-in failed");
+    }
+    const data = await res.json();
+    localStorage.setItem(TOKEN_KEY, data.access_token);
+    localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+    setUser(data.user);
+    return data.user as AuthUser;
+  }, []);
+
   const logout = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem(USER_KEY);
@@ -63,7 +81,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const getToken = useCallback(() => localStorage.getItem(TOKEN_KEY), []);
 
   return (
-    <AuthContext.Provider value={{ user, isAuthed: !!user, requestOTP, verifyOTP, logout, getToken }}>
+    <AuthContext.Provider value={{ user, isAuthed: !!user, requestOTP, verifyOTP, googleSignIn, logout, getToken }}>
       {children}
     </AuthContext.Provider>
   );

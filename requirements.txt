@@ -27,4 +27,7 @@ statsmodels>=0.14.0
 # Telegram bot
 python-telegram-bot>=20.7
 
+# Google OAuth
+google-auth>=2.29.0
+
 # Email parsing (stdlib imaplib used; no extra package needed)
