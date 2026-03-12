@@ -131,6 +131,25 @@ export const api = {
       }),
   },
 
+  aa: {
+    initiate: (phone: string) =>
+      request<{ consent_handle: string; redirect_url: string }>("/aa/initiate", {
+        method: "POST",
+        body: JSON.stringify({ phone }),
+      }),
+    fetch: (consentHandle: string) =>
+      request<{ status: string; transactions_found: number; suggestions_created: number }>(
+        `/aa/fetch/${consentHandle}`,
+        { method: "POST" }
+      ),
+    consents: () =>
+      request<{ id: number; consent_handle: string; phone: string; status: string; last_fetched_at: string | null; created_at: string }[]>(
+        "/aa/consents"
+      ),
+    revoke: (consentHandle: string) =>
+      request<{ status: string }>(`/aa/consents/${consentHandle}`, { method: "DELETE" }),
+  },
+
   budgets: {
     list: () => request<{ id: number; category: string; monthly_limit: number; currency: string }[]>("/budgets"),
     upsert: (body: { category: string; monthly_limit: number; currency?: string }) =>

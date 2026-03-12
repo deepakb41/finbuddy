@@ -1,5 +1,5 @@
 from datetime import datetime
-from sqlalchemy import Date, DateTime, Integer, Numeric, String, Text
+from sqlalchemy import Boolean, Date, DateTime, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from src.data.db import Base
 
@@ -72,4 +72,19 @@ class TransactionSuggestion(Base):
     category: Mapped[str | None] = mapped_column(String(64), nullable=True)
     tx_type: Mapped[str] = mapped_column(String(32), default="expense")
     status: Mapped[str] = mapped_column(String(16), default="pending")  # pending | accepted | rejected
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class AAConsent(Base):
+    __tablename__ = "aa_consents"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int | None] = mapped_column(Integer, nullable=True, index=True)
+    consent_handle: Mapped[str] = mapped_column(String(128), unique=True, index=True)
+    consent_id: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    phone: Mapped[str] = mapped_column(String(20))
+    # PENDING → ACTIVE → EXPIRED / REVOKED
+    status: Mapped[str] = mapped_column(String(32), default="PENDING")
+    setu_redirect_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
+    last_fetched_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

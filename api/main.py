@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from api.routers import transactions, insights, voice, budgets
-from api.routers import auth, suggestions
+from api.routers import auth, suggestions, aa
 from src.data.db import Base, engine
 
 # Create all tables (including new User, TransactionSuggestion)
@@ -62,6 +62,7 @@ app.include_router(insights.router,     prefix="/api")
 app.include_router(voice.router,        prefix="/api")
 app.include_router(budgets.router,      prefix="/api")
 app.include_router(suggestions.router,  prefix="/api")
+app.include_router(aa.router,           prefix="/api")
 
 
 @app.get("/api/health")
