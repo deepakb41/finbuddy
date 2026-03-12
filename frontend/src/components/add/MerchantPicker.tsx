@@ -43,8 +43,6 @@ const INDIAN_MERCHANTS: string[] = [
   "BYJU'S", "Unacademy", "Vedantu", "upGrad", "Coursera", "Udemy",
   // Fitness
   "Cult.fit", "Gold's Gym", "Anytime Fitness", "Decathlon",
-  // Other always at bottom
-  "Other",
 ];
 
 interface Props {
@@ -57,12 +55,16 @@ export function MerchantPicker({ value, onChange }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   const lowerVal = value.toLowerCase();
-  const filtered = lowerVal
-    ? INDIAN_MERCHANTS.filter((s) => s.toLowerCase().includes(lowerVal)).slice(0, 4)
-    : [];
+  // Up to 4 matches + Other at the end = 5 total
+  const suggestions: string[] = [
+    ...INDIAN_MERCHANTS.filter(
+      (s) => !lowerVal || s.toLowerCase().includes(lowerVal)
+    ).slice(0, 4),
+    "Other",
+  ];
 
-  // Quick-pick chips: top 6 popular merchants + Other
-  const quickPicks = ["Swiggy", "Zomato", "BigBasket", "Ola", "Amazon", "Blinkit", "Other"];
+  // Quick-pick chips shown before any input
+  const quickPicks = ["Swiggy", "Zomato", "BigBasket", "Ola", "Amazon", "Other"];
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -74,15 +76,15 @@ export function MerchantPicker({ value, onChange }: Props) {
 
   return (
     <div ref={ref} className="relative">
-      {/* Quick-pick chips */}
-      {!value && (
+      {/* Quick-pick chips — shown when field is empty and dropdown is closed */}
+      {!value && !open && (
         <div className="flex flex-wrap gap-1.5 mb-2">
           {quickPicks.map((s) => (
             <button
               key={s}
               type="button"
               onClick={() => onChange(s)}
-              className="px-3 py-1 text-xs bg-teal-50 rounded-full text-teal-700 hover:bg-teal-100 transition-colors"
+              className="px-3 py-1 text-xs bg-teal-50 dark:bg-teal-900/30 rounded-full text-teal-700 dark:text-teal-400 hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors"
             >
               {s}
             </button>
@@ -99,13 +101,15 @@ export function MerchantPicker({ value, onChange }: Props) {
         className="w-full border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
       />
 
-      {open && filtered.length > 0 && (
-        <ul className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-20 overflow-hidden max-h-48 overflow-y-auto">
-          {filtered.map((s) => (
+      {open && (
+        <ul className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-20 overflow-hidden">
+          {suggestions.map((s) => (
             <li key={s}>
               <button
                 type="button"
-                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-teal-50 dark:hover:bg-teal-900/30 text-gray-700 dark:text-gray-300 ${s === "Other" ? "border-t border-gray-100 dark:border-gray-700 font-medium text-gray-500 dark:text-gray-400" : ""}`}
+                className={`w-full text-left px-4 py-2.5 text-sm hover:bg-teal-50 dark:hover:bg-teal-900/30 text-gray-700 dark:text-gray-300 ${
+                  s === "Other" ? "border-t border-gray-100 dark:border-gray-700 font-medium text-gray-500 dark:text-gray-400" : ""
+                }`}
                 onClick={() => { onChange(s); setOpen(false); }}
               >
                 {s}

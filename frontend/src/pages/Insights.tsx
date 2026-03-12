@@ -1,6 +1,8 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useMemo } from "react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { api } from "../api/client";
+import { useTheme } from "../hooks/useTheme";
 
 const FIXED_CATS = new Set(["Rent", "Finance & EMI", "Telecom", "Utilities & Bills", "Education", "Investments"]);
 const _currency = localStorage.getItem("finbuddy_currency") || "INR";
@@ -104,6 +106,32 @@ export function Insights() {
     queryFn: () => api.insights.healthScore(),
   });
 
+  const { data: monthlyTrend } = useQuery({
+    queryKey: ["monthly-trend"],
+    queryFn: () => api.insights.monthlyTrend(6),
+  });
+
+  const theme = useTheme();
+  const areaColor = theme === "pink" ? "#c084fc" : theme === "dark" ? "#2dd4bf" : "#0d9488";
+  const gridColor = theme === "dark" ? "#1f2937" : "#f1f5f9";
+  const axisColor = theme === "dark" ? "#6b7280" : "#94a3b8";
+  const tooltipBg = theme === "dark" ? "#1f2937" : "#ffffff";
+  const tooltipBorder = theme === "pink" ? "#f0abfc" : "#e2e8f0";
+
+  const trendData = useMemo(() => {
+    if (!monthlyTrend) return [];
+    const map = new Map<string, number>();
+    for (const row of monthlyTrend) {
+      map.set(row.month, (map.get(row.month) ?? 0) + row.total);
+    }
+    return [...map.entries()]
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([month, total]) => ({
+        month: new Date(month + "-01").toLocaleString("en-IN", { month: "short" }),
+        total,
+      }));
+  }, [monthlyTrend]);
+
   const handleAsk = async () => {
     if (!question.trim()) return;
     setAsking(true);
@@ -163,6 +191,32 @@ export function Insights() {
       </div>
 
       <div className="max-w-lg mx-auto px-4 pt-4 space-y-4 animate-fade-in">
+
+        {/* ── Spending Trend ─────────────────────────────────────── */}
+        {trendData.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Spending Trend — Last 6 Months</h2>
+            <ResponsiveContainer width="100%" height={150}>
+              <AreaChart data={trendData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor={areaColor} stopOpacity={0.25} />
+                    <stop offset="95%" stopColor={areaColor} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
+                <XAxis dataKey="month" tick={{ fontSize: 11, fill: axisColor }} axisLine={false} tickLine={false} />
+                <YAxis hide />
+                <Tooltip
+                  contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 8, fontSize: 12 }}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  formatter={(v: any) => [`${symbol}${Number(v).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`, "Total spent"]}
+                />
+                <Area type="monotone" dataKey="total" stroke={areaColor} strokeWidth={2} fill="url(#trendGrad)" dot={{ r: 3, fill: areaColor }} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        )}
 
         {/* ── AI Summary ─────────────────────────────────────────── */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">

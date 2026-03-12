@@ -1,5 +1,5 @@
 """
-Seed 3 years of realistic Indian single-person spending data for deepakbisht.1361@gmail.com.
+Seed 3 years of realistic Indian single-person spending data for deepakbisht.8979@gmail.com.
 Run from project root: .venv/bin/python scripts/seed_demo.py
 """
 from __future__ import annotations
@@ -17,7 +17,7 @@ from src.data.models import Transaction
 
 Base.metadata.create_all(bind=engine)
 
-EMAIL = "deepakbisht.1361@gmail.com"
+EMAIL = "deepakbisht.8979@gmail.com"
 
 # ── helpers ────────────────────────────────────────────────────────────────────
 

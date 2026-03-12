@@ -273,6 +273,14 @@ def get_budget(month: Optional[str] = Query(None)):
 
 @router.get("/health-score")
 def get_health_score(month: Optional[str] = Query(None)):
+    # Return zero score for users with no transactions at all
+    from sqlalchemy import text as _ht
+    from src.data.db import engine as _he
+    with _he.connect() as _hc:
+        _total = _hc.execute(_ht("SELECT COUNT(*) FROM transactions WHERE status != 'deleted'")).fetchone()
+    if not _total or (_total[0] or 0) == 0:
+        return {"score": 0, "breakdown": {}}
+
     score = 0
     breakdown = {}
 

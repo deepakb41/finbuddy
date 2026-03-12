@@ -10,10 +10,12 @@ const tabs = [
   { to: "/insights",icon: "✨", label: "Insights" },
 ];
 
+const currentMonth = new Date().toISOString().slice(0, 7);
+
 export function BottomNav() {
   const { data: pending } = useQuery({
-    queryKey: ["suggestions-pending"],
-    queryFn: () => api.suggestions.pending(),
+    queryKey: ["suggestions-pending", currentMonth],
+    queryFn: () => api.suggestions.pending(currentMonth),
     refetchInterval: 30_000,
     select: (d) => d.length,
   });
@@ -36,7 +38,7 @@ export function BottomNav() {
           >
             <span className="text-xl mb-0.5 relative inline-block">
               {tab.icon}
-              {tab.to === "/inbox" && pending && pending > 0 && (
+              {tab.to === "/inbox" && (pending ?? 0) > 0 && (
                 <span className="absolute -top-1 -right-2 bg-teal-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                   {pending > 9 ? "9+" : pending}
                 </span>

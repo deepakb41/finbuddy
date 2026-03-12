@@ -5,6 +5,7 @@ import random
 import smtplib
 import string
 from datetime import datetime, timedelta, timezone
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from fastapi import APIRouter, HTTPException, status
@@ -32,6 +33,92 @@ def _generate_otp() -> str:
     return "".join(random.choices(string.digits, k=6))
 
 
+LOGO_URL = "https://finbuddy-nine.vercel.app/logo.png"
+APP_URL  = "https://finbuddy-nine.vercel.app"
+
+
+def _otp_html(otp: str) -> str:
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinBuddy — Verify your email</title>
+</head>
+<body style="margin:0;padding:0;background-color:#f4f4f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f4f4f5;padding:40px 16px;">
+    <tr>
+      <td align="center">
+        <!-- Card -->
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;background-color:#ffffff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,0.08);overflow:hidden;">
+
+          <!-- Header -->
+          <tr>
+            <td align="center" style="background-color:#0f766e;padding:32px 24px 28px;">
+              <img src="{LOGO_URL}" alt="FinBuddy" width="52" height="52"
+                   style="display:block;margin:0 auto 12px;border-radius:12px;">
+              <p style="margin:0;font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.3px;">FinBuddy</p>
+              <p style="margin:4px 0 0;font-size:13px;color:#99f6e4;">Your AI-powered personal finance companion</p>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:36px 40px 28px;">
+              <p style="margin:0 0 6px;font-size:22px;font-weight:700;color:#111827;letter-spacing:-0.3px;">Verify your email</p>
+              <p style="margin:0 0 28px;font-size:15px;color:#6b7280;line-height:1.55;">
+                Use the code below to sign in to your FinBuddy account. It expires in <strong style="color:#374151;">{OTP_EXPIRE_MINUTES} minutes</strong>.
+              </p>
+
+              <!-- OTP box -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td align="center" style="background-color:#f0fdf4;border:2px dashed #6ee7b7;border-radius:12px;padding:28px 16px;">
+                    <p style="margin:0 0 4px;font-size:12px;font-weight:600;color:#6b7280;letter-spacing:1.5px;text-transform:uppercase;">Your verification code</p>
+                    <p style="margin:0;font-size:44px;font-weight:800;color:#0f766e;letter-spacing:10px;font-variant-numeric:tabular-nums;">{otp}</p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- App description -->
+              <p style="margin:28px 0 0;font-size:14px;color:#6b7280;line-height:1.6;border-top:1px solid #f3f4f6;padding-top:24px;">
+                FinBuddy automatically tracks your spending, categorizes transactions, and provides
+                AI-powered insights to help you manage your money better.
+              </p>
+
+              <!-- Security note -->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-top:20px;">
+                <tr>
+                  <td style="background-color:#fffbeb;border-left:3px solid #fbbf24;border-radius:0 8px 8px 0;padding:12px 16px;">
+                    <p style="margin:0;font-size:13px;color:#92400e;">
+                      If you did not request this code, you can safely ignore this email. Your account is secure.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding:20px 40px 28px;border-top:1px solid #f3f4f6;">
+              <p style="margin:0;font-size:13px;color:#9ca3af;">
+                <strong style="color:#6b7280;">FinBuddy</strong> &mdash; AI-powered personal finance
+              </p>
+              <p style="margin:6px 0 0;font-size:12px;color:#d1d5db;">
+                &copy; 2026 FinBuddy &bull; <a href="{APP_URL}" style="color:#0f766e;text-decoration:none;">finbuddy-nine.vercel.app</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>"""
+
+
 def _send_email_otp(to_email: str, otp: str) -> None:
     host = os.getenv("SMTP_HOST")
     user = os.getenv("SMTP_USER")
@@ -42,13 +129,19 @@ def _send_email_otp(to_email: str, otp: str) -> None:
         print(f"\n[FinBuddy OTP] Email: {to_email}  →  OTP: {otp}  (set SMTP_* vars to send real emails)\n")
         return
 
-    msg = MIMEText(
-        f"Your FinBuddy login code is: {otp}\n\nThis code expires in {OTP_EXPIRE_MINUTES} minutes.",
-        "plain",
-    )
-    msg["Subject"] = f"FinBuddy: your login code is {otp}"
-    msg["From"] = user
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = f"Your FinBuddy login code: {otp}"
+    msg["From"] = f"FinBuddy <{user}>"
     msg["To"] = to_email
+
+    # Plain-text fallback for email clients that don't render HTML
+    plain = (
+        f"Your FinBuddy login code is: {otp}\n\n"
+        f"This code expires in {OTP_EXPIRE_MINUTES} minutes.\n\n"
+        f"If you did not request this code, you can safely ignore this email."
+    )
+    msg.attach(MIMEText(plain, "plain"))
+    msg.attach(MIMEText(_otp_html(otp), "html"))
 
     with smtplib.SMTP(host, port) as smtp:
         smtp.starttls()

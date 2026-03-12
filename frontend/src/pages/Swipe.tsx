@@ -205,11 +205,14 @@ function SuggestionCard({
   );
 }
 
+const COMING_SOON_KEY = "finbuddy_bank_info_dismissed";
+
 export function Swipe() {
   const qc = useQueryClient();
   const months = getMonths();
   const [selectedMonth, setSelectedMonth] = useState(months[0].value);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showInfo, setShowInfo] = useState(() => !localStorage.getItem(COMING_SOON_KEY));
 
   const { data: suggestions = [], isLoading } = useQuery({
     queryKey: ["suggestions-pending", selectedMonth],
@@ -245,6 +248,44 @@ export function Swipe() {
       </div>
 
       <div className="max-w-lg mx-auto px-4 pt-5 space-y-5">
+        {/* Coming Soon info card */}
+        {showInfo && (
+          <div className="bg-gradient-to-br from-teal-50 to-sky-50 dark:from-teal-900/20 dark:to-sky-900/20 border border-teal-100 dark:border-teal-800/40 rounded-2xl p-4 shadow-sm">
+            <div className="flex items-start justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">🏦</span>
+                <div>
+                  <p className="text-sm font-bold text-teal-800 dark:text-teal-300">Bank Connect — Coming Soon</p>
+                  <span className="text-[10px] font-semibold bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-400 px-1.5 py-0.5 rounded-md uppercase tracking-wide">In progress</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setShowInfo(false); localStorage.setItem(COMING_SOON_KEY, "1"); }}
+                className="text-teal-400 dark:text-teal-600 hover:text-teal-600 dark:hover:text-teal-400 text-lg leading-none ml-2"
+                aria-label="Dismiss"
+              >
+                ×
+              </button>
+            </div>
+            <p className="text-xs text-teal-700 dark:text-teal-400 mb-3 leading-relaxed">
+              Connect your bank via <strong>Setu Account Aggregator</strong>. Transactions will be auto-fetched and categorized by AI — no manual SMS pasting needed.
+            </p>
+            <div className="space-y-1.5">
+              {[
+                ["🤖", "AI parses every narration and assigns a category"],
+                ["🔒", "Bank-grade encryption · no passwords stored"],
+                ["✅", "One-time consent · revoke anytime"],
+              ].map(([icon, text]) => (
+                <div key={text} className="flex items-start gap-2">
+                  <span className="text-sm">{icon}</span>
+                  <p className="text-xs text-teal-600 dark:text-teal-400/80">{text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Bank Accounts section */}
         <BankAccountsCard onAdd={() => setShowAddModal(true)} />
 

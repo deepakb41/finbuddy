@@ -17,7 +17,6 @@ interface Props {
   viewMode?: "monthly" | "yearly" | "alltime";
 }
 
-const FIXED_CATS = new Set(["Rent", "Finance & EMI", "Telecom", "Utilities & Bills", "Education", "Investments"]);
 
 function Card({ title, value, sub, cls, textCls, subCls }: {
   title: string; value: string; sub?: string; cls: string; textCls: string; subCls?: string;
@@ -41,19 +40,6 @@ export function SummaryCards({ data, symbol, categories, viewMode = "monthly" }:
   const investments = categories
     ? categories.filter((c) => c.category === "Investments").reduce((sum, c) => sum + c.this_month, 0)
     : 0;
-
-  const biggestVarCat = categories
-    ?.filter(c => c.this_month > 0 && !FIXED_CATS.has(c.category))
-    .sort((a, b) => b.this_month - a.this_month)[0];
-
-  // A3: Top cat vs last month
-  const biggestVarCatLastMonth = categories
-    ?.filter(c => c.last_month > 0 && !FIXED_CATS.has(c.category))
-    .sort((a, b) => b.last_month - a.last_month)[0];
-  const topCatSame = biggestVarCatLastMonth?.category === biggestVarCat?.category;
-  const topCatSub = biggestVarCat
-    ? `${biggestVarCat.category}${viewMode === "monthly" ? ` · ${topCatSame ? "same as last month" : biggestVarCatLastMonth ? `↑ from ${biggestVarCatLastMonth.category}` : ""}` : ""}`
-    : undefined;
 
   // A1: Daily avg — use backend last_month_expense with actual last-month day count
   const daysTracked = Math.max(1, data.days_elapsed);
@@ -88,30 +74,6 @@ export function SummaryCards({ data, symbol, categories, viewMode = "monthly" }:
   // Title variants
   const spendTitle = viewMode === "yearly" ? "Spent this year" : viewMode === "alltime" ? "Total spent" : "Spent this month";
 
-  // A2: Month-end estimate — blank/show total for past months
-  const isPastMonth = data.projected_month_end === 0 && viewMode === "monthly";
-  const forecastTitle = viewMode === "yearly"
-    ? "Monthly average"
-    : viewMode === "alltime"
-    ? "Avg per month"
-    : isPastMonth
-    ? "Month total"
-    : "Month-end est.";
-  const forecastValue = viewMode === "yearly"
-    ? fmt(data.total_expense / 12)
-    : viewMode === "alltime"
-    ? fmt(data.total_expense / Math.max(1, 24))
-    : isPastMonth
-    ? fmt(data.total_expense)
-    : fmt(data.projected_month_end);
-  const forecastSub = viewMode === "yearly"
-    ? "this year"
-    : viewMode === "alltime"
-    ? "~2 year avg"
-    : isPastMonth
-    ? "Complete month"
-    : `Day ${data.days_elapsed} of ${data.days_in_month} · daily rate`;
-
   const investTitle = viewMode === "yearly" ? "Invested YTD" : viewMode === "alltime" ? "Total invested" : "Invested";
   const savingsTitle = viewMode === "alltime" ? "Avg savings rate" : "Savings rate";
   const dailyTitle = viewMode === "yearly" ? "Daily pace" : "Daily avg";
@@ -121,17 +83,6 @@ export function SummaryCards({ data, symbol, categories, viewMode = "monthly" }:
     <div className="grid grid-cols-2 gap-3 stagger">
       <Card title={spendTitle} value={fmt(data.total_expense)} sub={`${data.tx_count} transactions`}
         cls="bg-rose-50 dark:bg-rose-950/30" textCls="text-rose-700 dark:text-rose-400" />
-      <Card title={forecastTitle} value={forecastValue} sub={forecastSub}
-        cls="bg-amber-50 dark:bg-amber-950/30" textCls="text-amber-700 dark:text-amber-400" />
-      <Card title={investTitle} value={fmt(investments)} sub={investments === 0 ? "No investments" : "SIPs & funds"}
-        cls="bg-violet-50 dark:bg-violet-950/30" textCls="text-violet-700 dark:text-violet-400" />
-      <Card title={savingsTitle} value={`${savingsPct}%`}
-        sub={savingsPct >= savingsTarget ? "✅ On track" : savingsPct > 0 ? `⚠️ Below ${savingsTarget}%` : "—"}
-        cls="bg-sky-50 dark:bg-sky-950/30" textCls="text-sky-700 dark:text-sky-400" />
-      {biggestVarCat && (
-        <Card title="Top spending" value={fmt(biggestVarCat.this_month)} sub={topCatSub}
-          cls="bg-orange-50 dark:bg-orange-950/30" textCls="text-orange-700 dark:text-orange-400" />
-      )}
       <Card
         title={dailyTitle}
         value={`${fmt(dailyAvg)}/day`}
@@ -140,6 +91,11 @@ export function SummaryCards({ data, symbol, categories, viewMode = "monthly" }:
         cls="bg-teal-50 dark:bg-teal-950/30"
         textCls="text-teal-700 dark:text-teal-400"
       />
+      <Card title={investTitle} value={fmt(investments)} sub={investments === 0 ? "No investments" : "SIPs & funds"}
+        cls="bg-violet-50 dark:bg-violet-950/30" textCls="text-violet-700 dark:text-violet-400" />
+      <Card title={savingsTitle} value={`${savingsPct}%`}
+        sub={savingsPct >= savingsTarget ? "✅ On track" : savingsPct > 0 ? `⚠️ Below ${savingsTarget}%` : "—"}
+        cls="bg-sky-50 dark:bg-sky-950/30" textCls="text-sky-700 dark:text-sky-400" />
     </div>
   );
 }

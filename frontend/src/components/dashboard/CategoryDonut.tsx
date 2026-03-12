@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
-import { CHART_COLORS } from "../../utils/chartColors";
+import { getActiveChartColors } from "../../utils/chartColors";
+import { useTheme } from "../../hooks/useTheme";
 
 const STORAGE_KEY = "finbuddy_cat_filter";
 
@@ -11,6 +12,9 @@ interface Props {
 }
 
 export function CategoryDonut({ data, symbol, totalIncome }: Props) {
+  const theme = useTheme();
+  const CHART_COLORS = getActiveChartColors();
+  const tooltipBorder = theme === "pink" ? "#f0abfc" : "#e2e8f0";
   const allCategories = data
     .filter((d) => d.this_month > 0)
     .sort((a, b) => b.this_month - a.this_month)
@@ -146,7 +150,7 @@ export function CategoryDonut({ data, symbol, totalIncome }: Props) {
         </div>
       ) : (
         // Amount — donut chart
-        <ResponsiveContainer width="100%" height={220}>
+        <ResponsiveContainer width="100%" height={260}>
           <PieChart>
             <Pie
               data={filtered}
@@ -157,6 +161,29 @@ export function CategoryDonut({ data, symbol, totalIncome }: Props) {
               innerRadius={50}
               outerRadius={85}
               paddingAngle={2}
+              label={({ cx, cy, midAngle, outerRadius, name, percent }: {
+                cx: number; cy: number; midAngle: number;
+                outerRadius: number; name: string; percent: number;
+              }) => {
+                if (percent < 0.04) return null;
+                const RADIAN = Math.PI / 180;
+                const radius = outerRadius + 22;
+                const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                const label = name.length > 9 ? name.slice(0, 9) + "…" : name;
+                return (
+                  <text
+                    x={x} y={y}
+                    fill={theme === "dark" ? "#94a3b8" : "#6b7280"}
+                    textAnchor={x > cx ? "start" : "end"}
+                    dominantBaseline="central"
+                    fontSize={10}
+                  >
+                    {`${label} ${(percent * 100).toFixed(0)}%`}
+                  </text>
+                );
+              }}
+              labelLine={{ stroke: theme === "dark" ? "#4b5563" : "#d1d5db", strokeWidth: 1 }}
             >
               {filtered.map((entry) => {
                 const idx = allCategories.indexOf(entry.category);
@@ -164,7 +191,7 @@ export function CategoryDonut({ data, symbol, totalIncome }: Props) {
               })}
             </Pie>
             <Tooltip
-              contentStyle={{ backgroundColor: "var(--tooltip-bg,#fff)", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12 }}
+              contentStyle={{ backgroundColor: "var(--tooltip-bg,#fff)", border: `1px solid ${tooltipBorder}`, borderRadius: 8, fontSize: 12 }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               formatter={(value: any, name: any) => [
                 `${symbol}${Number(value).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`,

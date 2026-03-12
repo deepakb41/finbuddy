@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { CHART_COLORS } from "../../utils/chartColors";
+import { getActiveChartColors } from "../../utils/chartColors";
+import { useTheme } from "../../hooks/useTheme";
 
 interface Props {
   data: { month: string; category: string; total: number }[];
@@ -11,6 +12,12 @@ const FIXED_CATS = new Set(["Rent", "Finance & EMI", "Telecom", "Utilities & Bil
 type FilterMode = "all" | "fixed" | "variable";
 
 export function MonthlyTrendChart({ data, symbol }: Props) {
+  const theme = useTheme();
+  const CHART_COLORS = getActiveChartColors();
+  const isPink = theme === "pink";
+  const gridColor = isPink ? "#f0abfc" : "#e2e8f0";
+  const axisColor = isPink ? "#c084fc" : "#94a3b8";
+  const tooltipBorder = isPink ? "#f0abfc" : "#e2e8f0";
   const [filter, setFilter] = useState<FilterMode>("variable");
   const [selectedCats, setSelectedCats] = useState<string[] | null>(null); // null = show default (3 cats)
 
@@ -124,11 +131,11 @@ export function MonthlyTrendChart({ data, symbol }: Props) {
       ) : (
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={pivoted} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" className="dark:stroke-gray-700" />
-            <XAxis dataKey="month" tick={{ fontSize: 11, fill: "#94a3b8" }} />
-            <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} tickFormatter={(v) => `${symbol}${(v/1000).toFixed(0)}k`} />
+            <CartesianGrid strokeDasharray="3 3" stroke={gridColor} />
+            <XAxis dataKey="month" tick={{ fontSize: 11, fill: axisColor }} />
+            <YAxis tick={{ fontSize: 11, fill: axisColor }} tickFormatter={(v) => `${symbol}${(v/1000).toFixed(0)}k`} />
             <Tooltip
-              contentStyle={{ backgroundColor: "var(--tooltip-bg, #fff)", border: "1px solid #e2e8f0", borderRadius: 8, fontSize: 12 }}
+              contentStyle={{ backgroundColor: "var(--tooltip-bg, #fff)", border: `1px solid ${tooltipBorder}`, borderRadius: 8, fontSize: 12 }}
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               formatter={(value: any, name: any) => [`${symbol}${Number(value).toLocaleString("en-IN",{maximumFractionDigits:0})}`, name]}
             />

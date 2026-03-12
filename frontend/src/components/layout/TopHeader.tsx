@@ -3,29 +3,34 @@ import { useNavigate } from "react-router-dom";
 import { Sun, Moon } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { Switch } from "../ui/switch";
+import { type Theme, dispatchThemeChange } from "../../hooks/useTheme";
 
-function useDarkMode() {
-  const [dark, setDark] = useState(() =>
-    document.documentElement.classList.contains("dark")
-  );
+function applyTheme(theme: Theme) {
+  const html = document.documentElement;
+  html.classList.remove("dark", "pink");
+  if (theme === "dark") html.classList.add("dark");
+  if (theme === "pink") html.classList.add("pink");
+  localStorage.setItem("finbuddy_theme", theme);
+  dispatchThemeChange(theme);
+}
 
-  const toggle = () => {
-    const next = !document.documentElement.classList.contains("dark");
-    if (next) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-    setDark(next);
-    localStorage.setItem("finbuddy_theme", next ? "dark" : "light");
+function useLocalTheme() {
+  const [theme, setTheme] = useState<Theme>(() => {
+    const saved = localStorage.getItem("finbuddy_theme") as Theme | null;
+    return saved ?? "light";
+  });
+
+  const setAndApply = (t: Theme) => {
+    applyTheme(t);
+    setTheme(t);
   };
 
-  return { dark, toggle };
+  return { theme, setAndApply };
 }
 
 export function TopHeader() {
   const { user } = useAuth();
-  const { dark, toggle } = useDarkMode();
+  const { theme, setAndApply } = useLocalTheme();
   const navigate = useNavigate();
 
   const initials = user?.email
@@ -40,11 +45,31 @@ export function TopHeader() {
           <span className="text-lg font-bold text-teal-700 dark:text-teal-400 tracking-tight">FinBuddy</span>
         </div>
         <div className="flex items-center gap-2">
+          {/* Light / Dark toggle */}
           <div className="flex items-center gap-1.5">
-            <Sun className={`size-4 ${dark ? "text-gray-400 dark:text-gray-500" : "text-amber-500"}`} />
-            <Switch checked={dark} onCheckedChange={toggle} aria-label="Toggle dark mode" />
-            <Moon className={`size-4 ${dark ? "text-teal-400" : "text-gray-400"}`} />
+            <Sun className={`size-4 ${theme === "light" ? "text-amber-500" : "text-gray-400"}`} />
+            <Switch
+              checked={theme === "dark"}
+              onCheckedChange={(v) => setAndApply(v ? "dark" : "light")}
+              aria-label="Toggle dark mode"
+            />
+            <Moon className={`size-4 ${theme === "dark" ? "text-teal-400" : "text-gray-400"}`} />
           </div>
+
+          {/* Pink theme toggle */}
+          <button
+            type="button"
+            onClick={() => setAndApply(theme === "pink" ? "light" : "pink")}
+            aria-label="Toggle pink theme"
+            title="Pink / Purple theme"
+            className={`w-5 h-5 rounded-full border-2 transition-all ${
+              theme === "pink"
+                ? "border-fuchsia-500 scale-110 shadow-md"
+                : "border-fuchsia-300 hover:border-fuchsia-400"
+            }`}
+            style={{ background: "linear-gradient(135deg, #f0abfc, #c084fc)" }}
+          />
+
           <button
             type="button"
             onClick={() => navigate("/settings")}

@@ -106,6 +106,126 @@ html.dark .skeleton {
   margin-bottom: calc(var(--icon-size) * 0.17);
 }
 
+/* ── Pink / Purple pastel theme ────────────────────────────────────────────── */
+html.pink body {
+  background-color: #ffffff;
+  color: #1e1b2e;
+}
+
+/* All backgrounds — white and very light neutrals only */
+html.pink .bg-white    { background-color: #ffffff !important; }
+html.pink .bg-gray-50  { background-color: #fafafa !important; }
+html.pink .bg-gray-100 { background-color: #f5f5f5 !important; }
+html.pink .bg-gray-800 { background-color: #f8f8f8 !important; }
+html.pink .bg-gray-900 { background-color: #ffffff !important; }
+html.pink .bg-gray-950 { background-color: #fafafa !important; }
+
+/* Borders — all light neutral, no pink borders */
+html.pink .border-gray-100,
+html.pink .border-gray-200,
+html.pink .border-gray-600,
+html.pink .border-gray-700,
+html.pink .border-gray-800 { border-color: #e5e7eb !important; }
+
+/* ── KPI card backgrounds (the ONLY place with pink/purple) ── */
+html.pink .bg-rose-50        { background-color: #fce7f3 !important; }
+html.pink .bg-teal-50        { background-color: #f3e8ff !important; }
+html.pink .bg-violet-50      { background-color: #fdf4ff !important; }
+html.pink .bg-sky-50         { background-color: #f5f3ff !important; }
+html.pink .bg-amber-50       { background-color: #fce7f3 !important; }
+html.pink .bg-orange-50      { background-color: #fae8ff !important; }
+html.pink .bg-rose-950\/30   { background-color: #fce7f3 !important; }
+html.pink .bg-teal-950\/30   { background-color: #f3e8ff !important; }
+html.pink .bg-violet-950\/30 { background-color: #fdf4ff !important; }
+html.pink .bg-sky-950\/30    { background-color: #f5f3ff !important; }
+html.pink .bg-amber-950\/30  { background-color: #fce7f3 !important; }
+
+/* ── KPI card text ── */
+html.pink .text-rose-700,
+html.pink .text-rose-400   { color: #be185d !important; }
+html.pink .text-teal-700,
+html.pink .text-teal-400   { color: #7e22ce !important; }
+html.pink .text-violet-700,
+html.pink .text-violet-400 { color: #a21caf !important; }
+html.pink .text-sky-700,
+html.pink .text-sky-400    { color: #6d28d9 !important; }
+html.pink .text-amber-700,
+html.pink .text-amber-400  { color: #db2777 !important; }
+html.pink .text-orange-700,
+html.pink .text-orange-400 { color: #c026d3 !important; }
+
+/* Regular text — readable dark tones */
+html.pink .text-gray-500,
+html.pink .text-gray-400 { color: #6b7280 !important; }
+html.pink .text-gray-600,
+html.pink .text-gray-700 { color: #374151 !important; }
+html.pink .text-gray-800,
+html.pink .text-gray-900 { color: #111827 !important; }
+html.pink .text-gray-200,
+html.pink .text-gray-300 { color: #9ca3af !important; }
+
+/* ── Accent: teal → fuchsia/purple (buttons, active states, links) ── */
+html.pink .text-teal-600,
+html.pink .text-teal-700 { color: #9333ea !important; }
+html.pink .text-teal-400 { color: #a855f7 !important; }
+html.pink .text-emerald-400,
+html.pink .text-emerald-500,
+html.pink .text-emerald-600 { color: #7c3aed !important; }
+html.pink .text-rose-500    { color: #db2777 !important; }
+
+html.pink .bg-teal-600  { background-color: #9333ea !important; }
+html.pink .bg-teal-500  { background-color: #a855f7 !important; }
+html.pink .bg-teal-100  { background-color: #f3e8ff !important; }
+html.pink .bg-teal-50   { background-color: #faf5ff !important; }
+html.pink .bg-teal-900\/40 { background-color: #f3e8ff !important; }
+html.pink .bg-teal-900\/30 { background-color: #faf5ff !important; }
+html.pink .hover\:bg-teal-700:hover { background-color: #7e22ce !important; }
+html.pink .hover\:bg-teal-200:hover { background-color: #e9d5ff !important; }
+html.pink .hover\:bg-teal-100:hover { background-color: #f3e8ff !important; }
+
+/* Focus rings — neutral, no loud pink */
+html.pink .ring-teal-400,
+html.pink .focus\:ring-teal-400:focus { --tw-ring-color: #a855f7; }
+html.pink .border-teal-400 { border-color: #d8b4fe !important; }
+
+/* Active nav tab */
+html.pink .text-teal-600 { color: #9333ea !important; }
+
+/* Progress bars */
+html.pink .bg-emerald-500,
+html.pink .bg-emerald-400 { background-color: #7c3aed !important; }
+html.pink .bg-amber-400   { background-color: #a855f7 !important; }
+
+/* Pills / badges */
+html.pink .bg-rose-100    { background-color: #fce7f3 !important; }
+html.pink .bg-emerald-100 { background-color: #ede9fe !important; }
+html.pink .bg-violet-100  { background-color: #fdf4ff !important; }
+html.pink .text-emerald-700 { color: #6d28d9 !important; }
+
+/* Header and nav — white with clean neutral border */
+html.pink header    { background-color: #ffffff !important; border-color: #e5e7eb !important; }
+html.pink nav.fixed { background-color: #ffffff !important; border-color: #e5e7eb !important; }
+
+/* Keep FinBuddy logo text in its original teal — do not recolor */
+html.pink header .text-teal-700,
+html.pink header .text-teal-400 { color: #0f766e !important; }
+
+/* Inputs — clean white, neutral border */
+html.pink input,
+html.pink select,
+html.pink textarea {
+  background-color: #ffffff !important;
+  border-color: #d1d5db !important;
+  color: #111827 !important;
+}
+
+/* Skeleton shimmer */
+html.pink .skeleton {
+  background: linear-gradient(90deg, #f3e8ff 25%, #e9d5ff 50%, #f3e8ff 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease infinite;
+}
+
 /* Tab switch animation */
 @keyframes tabIn {
   from { opacity: 0; transform: translateX(8px); }
