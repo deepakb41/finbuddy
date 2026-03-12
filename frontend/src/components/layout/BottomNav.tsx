@@ -40,7 +40,7 @@ export function BottomNav() {
               {tab.icon}
               {tab.to === "/inbox" && (pending ?? 0) > 0 && (
                 <span className="absolute -top-1 -right-2 bg-teal-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                  {pending > 9 ? "9+" : pending}
+                  {(pending ?? 0) > 9 ? "9+" : pending}
                 </span>
               )}
             </span>

@@ -23,7 +23,7 @@ function getLabel(score: number) {
 export function HealthScore({ score, breakdown }: Props) {
   const [expanded, setExpanded] = useState(false);
   const theme = useTheme();
-  const { text, bar } = getColor(score, theme === "pink");
+  const { text, bar, textHex } = getColor(score, theme === "pink");
 
   return (
     <div>

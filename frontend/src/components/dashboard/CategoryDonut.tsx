@@ -161,25 +161,25 @@ export function CategoryDonut({ data, symbol, totalIncome }: Props) {
               innerRadius={50}
               outerRadius={85}
               paddingAngle={2}
-              label={({ cx, cy, midAngle, outerRadius, name, percent }: {
-                cx: number; cy: number; midAngle: number;
-                outerRadius: number; name: string; percent: number;
-              }) => {
-                if (percent < 0.04) return null;
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              label={(props: any) => {
+                const { cx, cy, midAngle, outerRadius, name, percent } = props;
+                if ((percent ?? 0) < 0.04) return null;
                 const RADIAN = Math.PI / 180;
-                const radius = outerRadius + 22;
-                const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                const label = name.length > 9 ? name.slice(0, 9) + "…" : name;
+                const radius = (outerRadius ?? 85) + 22;
+                const angle = midAngle ?? 0;
+                const x = (cx ?? 0) + radius * Math.cos(-angle * RADIAN);
+                const y = (cy ?? 0) + radius * Math.sin(-angle * RADIAN);
+                const lbl = (name ?? "").length > 9 ? (name ?? "").slice(0, 9) + "…" : (name ?? "");
                 return (
                   <text
                     x={x} y={y}
                     fill={theme === "dark" ? "#94a3b8" : "#6b7280"}
-                    textAnchor={x > cx ? "start" : "end"}
+                    textAnchor={x > (cx ?? 0) ? "start" : "end"}
                     dominantBaseline="central"
                     fontSize={10}
                   >
-                    {`${label} ${(percent * 100).toFixed(0)}%`}
+                    {`${lbl} ${((percent ?? 0) * 100).toFixed(0)}%`}
                   </text>
                 );
               }}
