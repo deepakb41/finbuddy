@@ -80,8 +80,10 @@ export function Insights() {
         .slice(0, 5)
     : [];
 
-  // Smart insight card content
-  const biggestOpportunity = categories
+  // Smart insight card content — null if no transaction data
+  const hasData = summary && summary.tx_count > 0;
+
+  const biggestOpportunity = hasData && categories
     ? (() => {
         const varCats = categories.filter(c => !FIXED_CATS.has(c.category) && c.this_month > 0);
         const biggest = varCats.sort((a, b) => b.this_month - a.this_month)[0];
@@ -90,28 +92,29 @@ export function Insights() {
       })()
     : null;
 
-  const anomalyAlert = categories
+  const anomalyAlert = hasData && categories
     ? (() => {
-        const anomaly = categories
-          .filter(c => c.last_month > 0)
+        const withHistory = categories.filter(c => c.last_month > 0);
+        if (!withHistory.length) return null;
+        const anomaly = withHistory
           .map(c => ({ ...c, pct: ((c.this_month - c.last_month) / c.last_month) * 100 }))
           .sort((a, b) => b.pct - a.pct)[0];
-        if (!anomaly || anomaly.pct < 20) return "No significant spending anomalies this month.";
+        if (!anomaly || anomaly.pct < 20) return null;
         return `${anomaly.category} is up ${Math.round(anomaly.pct)}% (${symbol}${anomaly.this_month.toLocaleString("en-IN", { maximumFractionDigits: 0 })}) vs last month (${symbol}${anomaly.last_month.toLocaleString("en-IN", { maximumFractionDigits: 0 })}).`;
       })()
     : null;
 
-  const goalProgress = health
+  const goalProgress = hasData && health
     ? (() => {
         const s = health.score;
         return `Your financial health score is ${s}/100. ${s >= 70 ? "You're on a solid track!" : s >= 50 ? "Room to improve — focus on savings." : "Consider reviewing your spending habits."}`;
       })()
     : null;
 
-  const investBody = summary
+  const investBody = hasData
     ? (() => {
         const surplus = summary.total_income - summary.total_expense;
-        if (surplus <= 0) return "Reduce expenses to free up money to invest.";
+        if (surplus <= 0) return null;
         const investAmt = surplus * 0.2;
         const annualReturn = investAmt * 12 * 0.12;
         return `Invest 20% of your surplus (${symbol}${Math.round(investAmt).toLocaleString("en-IN")}/mo) and earn ~${symbol}${Math.round(annualReturn).toLocaleString("en-IN")} a year at 12% p.a.`;
@@ -171,9 +174,9 @@ export function Insights() {
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 px-1 mb-2">Smart Insights</h2>
           <div className="grid grid-cols-2 gap-2">
             {[
-              { title: "Opportunity", icon: "💡", body: biggestOpportunity, loading: !categories },
-              { title: "Anomaly", icon: "⚠️", body: anomalyAlert, loading: !categories },
-              { title: "Progress", icon: "🎯", body: goalProgress, loading: !health },
+              { title: "Opportunity", icon: "💡", body: biggestOpportunity, loading: !summary || !categories },
+              { title: "Anomaly", icon: "⚠️", body: anomalyAlert, loading: !summary || !categories },
+              { title: "Progress", icon: "🎯", body: goalProgress, loading: !summary || !health },
               { title: "Invest", icon: "📈", body: investBody, loading: !summary },
             ].map(({ title, icon, body, loading }) => (
               <div key={title} className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-1.5 fin-card">
