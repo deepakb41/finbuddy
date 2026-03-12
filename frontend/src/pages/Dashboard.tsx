@@ -153,7 +153,7 @@ export function Dashboard() {
       <div className="max-w-lg mx-auto px-4 pt-4 space-y-5 animate-fade-in">
         {/* Health Score */}
         {healthData && (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-sm border border-gray-100 dark:border-gray-700/50">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-sm border border-gray-100 dark:border-gray-700/50 fin-card">
             <HealthScore score={healthData.score} breakdown={healthData.breakdown as Record<string, { score: number }>} />
           </div>
         )}
@@ -170,7 +170,7 @@ export function Dashboard() {
         ) : null}
 
         {/* Spending by Category */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/50">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/50 fin-card">
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Spending by Category</h2>
           {loadingCats ? (
             <div className="h-48 bg-gray-100 dark:bg-gray-700 rounded-xl animate-pulse" />
@@ -180,13 +180,13 @@ export function Dashboard() {
         </div>
 
         {/* Forecast Trend */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/50">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/50 fin-card">
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Spending Forecast</h2>
           <ForecastTrend symbol={symbol} projectedMonthEnd={viewMode === "monthly" ? summary?.projected_month_end : undefined} />
         </div>
 
         {/* 12-Month Trend */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/50">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/50 fin-card">
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">12-Month Trend</h2>
           <MonthlyTrendChart data={trend || []} symbol={symbol} />
         </div>

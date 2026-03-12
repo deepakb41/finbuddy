@@ -1,8 +1,9 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useMemo } from "react";
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { useState } from "react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { api } from "../api/client";
 import { useTheme } from "../hooks/useTheme";
+import { ActivityRings } from "../components/ui/activity-rings";
 
 const FIXED_CATS = new Set(["Rent", "Finance & EMI", "Telecom", "Utilities & Bills", "Education", "Investments"]);
 const _currency = localStorage.getItem("finbuddy_currency") || "INR";
@@ -30,7 +31,7 @@ function InsightCard({ title, icon, body, isLoading }: {
   };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
       <div className="flex items-start gap-3">
         <span className="text-xl flex-shrink-0">{icon}</span>
         <div className="flex-1 min-w-0">
@@ -106,31 +107,13 @@ export function Insights() {
     queryFn: () => api.insights.healthScore(),
   });
 
-  const { data: monthlyTrend } = useQuery({
-    queryKey: ["monthly-trend"],
-    queryFn: () => api.insights.monthlyTrend(6),
-  });
-
   const theme = useTheme();
-  const areaColor = theme === "pink" ? "#c084fc" : theme === "dark" ? "#2dd4bf" : "#0d9488";
+  const accentColor = theme === "pink" ? "#c084fc" : theme === "dark" ? "#2dd4bf" : "#0d9488";
   const gridColor = theme === "dark" ? "#1f2937" : "#f1f5f9";
   const axisColor = theme === "dark" ? "#6b7280" : "#94a3b8";
   const tooltipBg = theme === "dark" ? "#1f2937" : "#ffffff";
   const tooltipBorder = theme === "pink" ? "#f0abfc" : "#e2e8f0";
-
-  const trendData = useMemo(() => {
-    if (!monthlyTrend) return [];
-    const map = new Map<string, number>();
-    for (const row of monthlyTrend) {
-      map.set(row.month, (map.get(row.month) ?? 0) + row.total);
-    }
-    return [...map.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([month, total]) => ({
-        month: new Date(month + "-01").toLocaleString("en-IN", { month: "short" }),
-        total,
-      }));
-  }, [monthlyTrend]);
+  const barLastColor = theme === "dark" ? "#6b7280" : "#94a3b8";
 
   const handleAsk = async () => {
     if (!question.trim()) return;
@@ -148,9 +131,15 @@ export function Insights() {
 
   const momRows = categories
     ? [...categories]
-        .sort((a, b) => b.this_month - a.this_month)
         .filter((r) => r.this_month > 0 || r.last_month > 0)
-        .slice(0, 8)
+        .map(r => ({
+          ...r,
+          variation: r.last_month > 0
+            ? Math.abs((r.this_month - r.last_month) / r.last_month)
+            : (r.this_month > 0 ? 999 : 0),
+        }))
+        .sort((a, b) => b.variation - a.variation)
+        .slice(0, 5)
     : [];
 
   // Smart insight card content
@@ -192,34 +181,8 @@ export function Insights() {
 
       <div className="max-w-lg mx-auto px-4 pt-4 space-y-4 animate-fade-in">
 
-        {/* ── Spending Trend ─────────────────────────────────────── */}
-        {trendData.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Spending Trend — Last 6 Months</h2>
-            <ResponsiveContainer width="100%" height={150}>
-              <AreaChart data={trendData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={areaColor} stopOpacity={0.25} />
-                    <stop offset="95%" stopColor={areaColor} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} vertical={false} />
-                <XAxis dataKey="month" tick={{ fontSize: 11, fill: axisColor }} axisLine={false} tickLine={false} />
-                <YAxis hide />
-                <Tooltip
-                  contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 8, fontSize: 12 }}
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  formatter={(v: any) => [`${symbol}${Number(v).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`, "Total spent"]}
-                />
-                <Area type="monotone" dataKey="total" stroke={areaColor} strokeWidth={2} fill="url(#trendGrad)" dot={{ r: 3, fill: areaColor }} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        )}
-
         {/* ── AI Summary ─────────────────────────────────────────── */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Spending Summary</h2>
             <button
@@ -255,16 +218,34 @@ export function Insights() {
           )}
         </div>
 
-        {/* ── Smart Insight Cards ────────────────────────────────── */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 px-1">Smart Insights</h2>
-          <InsightCard title="Biggest Opportunity" icon="💡" body={biggestOpportunity} isLoading={!categories} />
-          <InsightCard title="Anomaly Alert" icon="⚠️" body={anomalyAlert} isLoading={!categories} />
-          <InsightCard title="Goal Progress" icon="🎯" body={goalProgress} isLoading={!health} />
+        {/* ── Smart Insight Cards (3-col) ────────────────────────── */}
+        <div>
+          <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 px-1 mb-2">Smart Insights</h2>
+          <div className="grid grid-cols-3 gap-2">
+            {[
+              { title: "Opportunity", icon: "💡", body: biggestOpportunity, loading: !categories },
+              { title: "Anomaly", icon: "⚠️", body: anomalyAlert, loading: !categories },
+              { title: "Progress", icon: "🎯", body: goalProgress, loading: !health },
+            ].map(({ title, icon, body, loading }) => (
+              <div key={title} className="bg-white dark:bg-gray-800 rounded-xl p-2.5 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-1 fin-card">
+                <div className="flex items-center gap-1">
+                  <span className="text-sm">{icon}</span>
+                  <p className="text-[9px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide leading-tight">{title}</p>
+                </div>
+                {loading ? (
+                  <div className="h-3 bg-gray-100 dark:bg-gray-700 rounded animate-pulse w-3/4" />
+                ) : body ? (
+                  <p className="text-[11px] text-gray-700 dark:text-gray-200 leading-snug line-clamp-4">{body}</p>
+                ) : (
+                  <p className="text-[11px] text-gray-400 dark:text-gray-500">No data yet</p>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* ── Ask your finances ──────────────────────────────────── */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Ask your finances</h2>
           <div className="flex gap-2">
             <input
@@ -311,62 +292,74 @@ export function Insights() {
           )}
         </div>
 
-        {/* ── Health Score ───────────────────────────────────────── */}
+        {/* ── Health Score – Activity Rings ──────────────────────── */}
         {health && (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Health Score</h2>
-            {Object.entries(health.breakdown).map(([key, val]) => {
-              const v = val as { score: number; tip?: string };
-              return (
-                <div key={key} className="py-2 border-b border-gray-50 dark:border-gray-700 last:border-0">
-                  <div className="flex justify-between">
-                    <span className="text-sm text-gray-600 dark:text-gray-300 capitalize">{key.replace(/_/g, " ")}</span>
-                    <span className="text-sm font-semibold text-gray-800 dark:text-gray-100">{v.score}/25</span>
-                  </div>
-                  {v.tip && <p className="text-xs text-gray-400 dark:text-gray-500 italic mt-0.5">{v.tip}</p>}
-                </div>
-              );
-            })}
-            <div className="flex justify-between pt-2 font-bold">
-              <span className="text-gray-700 dark:text-gray-200">Total</span>
-              <span className="text-teal-600 dark:text-teal-400">{health.score}/100</span>
-            </div>
+            <ActivityRings
+              totalScore={health.score}
+              accentColor={accentColor}
+              categories={Object.entries(health.breakdown).map(([key, val]) => {
+                const v = val as { score: number; tip?: string };
+                return { label: key.replace(/_/g, " "), score: v.score, tip: v.tip };
+              })}
+            />
           </div>
         )}
 
-        {/* ── Month vs Last Month ────────────────────────────────── */}
+        {/* ── Month vs Last Month (horizontal bars) ──────────────── */}
         {momRows.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Month vs Last Month</h2>
-            <div className="space-y-2">
-              {momRows.map((r) => {
-                const change = r.last_month > 0
-                  ? ((r.this_month - r.last_month) / r.last_month) * 100
-                  : 0;
-                const up = change > 0;
-                return (
-                  <div key={r.category} className="flex items-center gap-3 py-1">
-                    <span className="text-sm text-gray-700 dark:text-gray-200 flex-1">{r.category}</span>
-                    <span className="text-sm text-gray-500 dark:text-gray-400">
-                      {symbol}{r.this_month.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
-                    </span>
-                    {r.last_month > 0 && (
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                        up ? "bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400" : "bg-green-50 dark:bg-green-950/40 text-green-600 dark:text-green-400"
-                      }`}>
-                        {up ? "▲" : "▼"} {Math.abs(change).toFixed(0)}%
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
+            <div className="flex items-center justify-between mb-3">
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Month vs Last Month</h2>
+              <div className="flex items-center gap-3 text-[11px] text-gray-500 dark:text-gray-400">
+                <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: accentColor }} />This month</span>
+                <span className="flex items-center gap-1"><span className="inline-block w-2.5 h-2.5 rounded-sm" style={{ background: barLastColor }} />Last month</span>
+              </div>
             </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart
+                layout="vertical"
+                data={momRows.map(r => ({
+                  ...r,
+                  cat: r.category.length > 14 ? r.category.slice(0, 14) + "…" : r.category,
+                }))}
+                margin={{ top: 0, right: 12, left: 0, bottom: 0 }}
+                barCategoryGap="22%"
+                barGap={3}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke={gridColor} horizontal={false} />
+                <XAxis
+                  type="number"
+                  tick={{ fontSize: 10, fill: axisColor }}
+                  axisLine={false}
+                  tickLine={false}
+                  tickFormatter={(v) => `${symbol}${(v / 1000).toFixed(0)}k`}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="cat"
+                  width={90}
+                  tick={{ fontSize: 11, fill: axisColor }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <Tooltip
+                  contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 8, fontSize: 12 }}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  formatter={(v: any, name: any) => [`${symbol}${Number(v).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`, name]}
+                  cursor={{ fill: gridColor }}
+                />
+                <Bar dataKey="this_month" name="This month" fill={accentColor} radius={[0, 4, 4, 0]} maxBarSize={18} />
+                <Bar dataKey="last_month" name="Last month" fill={barLastColor} radius={[0, 4, 4, 0]} maxBarSize={18} />
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         )}
 
         {/* ── Top Merchants ──────────────────────────────────────── */}
         {topMerchants && topMerchants.length > 0 && (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Top Merchants (this month)</h2>
             <div className="space-y-2">
               {topMerchants.slice(0, 8).map((m, i) => (

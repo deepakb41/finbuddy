@@ -34,12 +34,19 @@ export function ForecastTrend({ symbol, projectedMonthEnd }: Props) {
       {/* Current month summary */}
       <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl">
         <div>
-          <p className="text-xs text-gray-500 dark:text-gray-400">Spent so far</p>
-          <p className="text-xl font-bold text-gray-800 dark:text-gray-100">{fmt(currentMonth.total, symbol)}</p>
-          {projectedMonthEnd && projectedMonthEnd > 0 && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-              Projected: <span className="font-medium text-amber-600 dark:text-amber-400">{fmt(projectedMonthEnd, symbol)}</span>
-            </p>
+          {projectedMonthEnd && projectedMonthEnd > 0 ? (
+            <>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Projected end of month</p>
+              <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{fmt(projectedMonthEnd, symbol)}</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                Spent so far: <span className="font-medium text-gray-600 dark:text-gray-300">{fmt(currentMonth.total, symbol)}</span>
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Spent so far</p>
+              <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">{fmt(currentMonth.total, symbol)}</p>
+            </>
           )}
         </div>
         <div className="text-right">
@@ -73,9 +80,9 @@ export function ForecastTrend({ symbol, projectedMonthEnd }: Props) {
         </div>
       )}
 
-      {data.insight && (
-        <p className="text-xs text-gray-400 dark:text-gray-500 italic leading-relaxed">{data.insight}</p>
-      )}
+      <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed">
+        Based on your last 2 years of spending, adjusted for Indian seasonal patterns (festivals, travel). Fallback: 6-month moving average.
+      </p>
     </div>
   );
 }

@@ -206,10 +206,10 @@ def get_forecast():
         nm = ((nm - 1) % 12) + 1
         next_months.append(f"{ny}-{nm:02d}")
 
-    # Ask Groq to forecast (use up to last 36 months for the AI prompt)
-    history_text = "\n".join(f"  {h['month']}: ₹{h['total']:,.0f}" for h in history[-36:])
+    # Ask Groq to forecast (use up to last 24 months for the AI prompt)
+    history_text = "\n".join(f"  {h['month']}: ₹{h['total']:,.0f}" for h in history[-24:])
     prompt = (
-        f"Monthly expense history (last 18 months):\n{history_text}\n\n"
+        f"Monthly expense history (last 24 months):\n{history_text}\n\n"
         f"Predict total expenses for the next 3 months: {', '.join(next_months)}.\n"
         f"Use same-month-prior-year values as anchors where available. "
         f"Consider Indian seasonal patterns (festivals in Oct-Nov, travel in Dec-Jan, summer in Apr-May).\n"
@@ -244,8 +244,8 @@ def get_forecast():
             "insight": parsed.get("insight", ""),
         }
     except Exception as exc:
-        # Fallback: simple 3-month moving average
-        avg = sum(h["total"] for h in history[-3:]) / min(3, len(history))
+        # Fallback: 6-month moving average
+        avg = sum(h["total"] for h in history[-6:]) / min(6, len(history))
         result = {
             "history": history,
             "forecast": [{"month": m, "total": round(avg, 2)} for m in next_months],

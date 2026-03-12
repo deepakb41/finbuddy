@@ -150,7 +150,7 @@ export function CategoryDonut({ data, symbol, totalIncome }: Props) {
         </div>
       ) : (
         // Amount — donut chart
-        <ResponsiveContainer width="100%" height={260}>
+        <ResponsiveContainer width="100%" height={220}>
           <PieChart>
             <Pie
               data={filtered}
@@ -161,29 +161,6 @@ export function CategoryDonut({ data, symbol, totalIncome }: Props) {
               innerRadius={50}
               outerRadius={85}
               paddingAngle={2}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              label={(props: any) => {
-                const { cx, cy, midAngle, outerRadius, name, percent } = props;
-                if ((percent ?? 0) < 0.04) return null;
-                const RADIAN = Math.PI / 180;
-                const radius = (outerRadius ?? 85) + 22;
-                const angle = midAngle ?? 0;
-                const x = (cx ?? 0) + radius * Math.cos(-angle * RADIAN);
-                const y = (cy ?? 0) + radius * Math.sin(-angle * RADIAN);
-                const lbl = (name ?? "").length > 9 ? (name ?? "").slice(0, 9) + "…" : (name ?? "");
-                return (
-                  <text
-                    x={x} y={y}
-                    fill={theme === "dark" ? "#94a3b8" : "#6b7280"}
-                    textAnchor={x > (cx ?? 0) ? "start" : "end"}
-                    dominantBaseline="central"
-                    fontSize={10}
-                  >
-                    {`${lbl} ${((percent ?? 0) * 100).toFixed(0)}%`}
-                  </text>
-                );
-              }}
-              labelLine={{ stroke: theme === "dark" ? "#4b5563" : "#d1d5db", strokeWidth: 1 }}
             >
               {filtered.map((entry) => {
                 const idx = allCategories.indexOf(entry.category);

@@ -160,7 +160,7 @@ export function AddTransaction() {
         )}
 
         {/* Type tabs */}
-        <div className="flex bg-white dark:bg-gray-800 rounded-2xl p-1 shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="flex bg-white dark:bg-gray-800 rounded-2xl p-1 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
           {(Object.keys(TAB_CONFIG) as TxType[]).map((t) => (
             <button
               key={t}
@@ -179,13 +179,13 @@ export function AddTransaction() {
 
         {/* Voice — expense only */}
         {txType === "expense" && (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
             <VoiceButton onParsed={handleVoiceParsed} />
           </div>
         )}
 
         {/* Main form */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card space-y-4">
           {/* Amount */}
           <div>
             <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Amount</label>
@@ -263,26 +263,26 @@ export function AddTransaction() {
 
         {/* Category section */}
         {txType === "expense" && (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
             <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-3">Category</label>
             <CategoryGrid value={form.category} onChange={(v) => setForm((f) => ({ ...f, category: v }))} />
           </div>
         )}
         {txType === "income" && (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
             <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-3">Source Type</label>
             <CategoryChips items={INCOME_SOURCES} value={form.category} onChange={(v) => setForm((f) => ({ ...f, category: v }))} />
           </div>
         )}
         {txType === "investment" && (
-          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
             <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide block mb-3">Investment Type</label>
             <CategoryChips items={INVESTMENT_TYPES} value={form.category} onChange={(v) => setForm((f) => ({ ...f, category: v }))} />
           </div>
         )}
 
         {/* Recurring toggle */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-sm border border-gray-100 dark:border-gray-700 space-y-3">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl px-4 py-3 shadow-sm border border-gray-100 dark:border-gray-700 space-y-3 fin-card">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-700 dark:text-gray-200">Recurring</p>

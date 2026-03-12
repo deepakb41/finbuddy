@@ -108,17 +108,17 @@ html.dark .skeleton {
 
 /* ── Pink / Purple pastel theme ────────────────────────────────────────────── */
 html.pink body {
-  background-color: #ffffff;
+  background-color: #fdf9ff;
   color: #1e1b2e;
 }
 
-/* All backgrounds — white and very light neutrals only */
-html.pink .bg-white    { background-color: #ffffff !important; }
-html.pink .bg-gray-50  { background-color: #fafafa !important; }
-html.pink .bg-gray-100 { background-color: #f5f5f5 !important; }
-html.pink .bg-gray-800 { background-color: #f8f8f8 !important; }
-html.pink .bg-gray-900 { background-color: #ffffff !important; }
-html.pink .bg-gray-950 { background-color: #fafafa !important; }
+/* All backgrounds — soft pink-white tints */
+html.pink .bg-white    { background-color: #fefbff !important; }
+html.pink .bg-gray-50  { background-color: #fdf9ff !important; }
+html.pink .bg-gray-100 { background-color: #f9f5fe !important; }
+html.pink .bg-gray-800 { background-color: #faf6ff !important; }
+html.pink .bg-gray-900 { background-color: #fefbff !important; }
+html.pink .bg-gray-950 { background-color: #fdf9ff !important; }
 
 /* Borders — all light neutral, no pink borders */
 html.pink .border-gray-100,
@@ -202,9 +202,9 @@ html.pink .bg-emerald-100 { background-color: #ede9fe !important; }
 html.pink .bg-violet-100  { background-color: #fdf4ff !important; }
 html.pink .text-emerald-700 { color: #6d28d9 !important; }
 
-/* Header and nav — white with clean neutral border */
-html.pink header    { background-color: #ffffff !important; border-color: #e5e7eb !important; }
-html.pink nav.fixed { background-color: #ffffff !important; border-color: #e5e7eb !important; }
+/* Header and nav — soft pink-white tint */
+html.pink header    { background-color: #fefbff !important; border-color: #ede9f6 !important; }
+html.pink nav.fixed { background-color: #fefbff !important; border-color: #ede9f6 !important; }
 
 /* Keep FinBuddy logo text in its original teal — do not recolor */
 html.pink header .text-teal-700,
@@ -243,4 +243,42 @@ html.pink .skeleton {
 }
 .animate-pop-in {
   animation: popIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Savings slider — pink theme track fix */
+html.pink .finbuddy-slider {
+  accent-color: #a855f7;
+  background-color: #f3e8ff !important;
+}
+
+/* ── 3D card lift effect ──────────────────────────────────────────────────── */
+.fin-card {
+  box-shadow: 3px 5px 0 0 #e2e8f0, 0 2px 8px rgba(0,0,0,0.05);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+.fin-card:hover {
+  transform: translateY(-2px) translateX(-1px);
+  box-shadow: 4px 7px 0 0 #e2e8f0, 0 4px 14px rgba(0,0,0,0.09);
+}
+.fin-card:active {
+  transform: translateY(1px) translateX(1px);
+  box-shadow: 1px 2px 0 0 #e2e8f0, 0 1px 4px rgba(0,0,0,0.05);
+}
+html.dark .fin-card {
+  box-shadow: 3px 5px 0 0 #111827, 0 2px 8px rgba(0,0,0,0.3);
+}
+html.dark .fin-card:hover {
+  box-shadow: 4px 7px 0 0 #111827, 0 4px 14px rgba(0,0,0,0.35);
+}
+html.dark .fin-card:active {
+  box-shadow: 1px 2px 0 0 #111827, 0 1px 4px rgba(0,0,0,0.2);
+}
+html.pink .fin-card {
+  box-shadow: 3px 5px 0 0 #f3e8ff, 0 2px 8px rgba(0,0,0,0.04);
+}
+html.pink .fin-card:hover {
+  box-shadow: 4px 7px 0 0 #e9d5ff, 0 4px 14px rgba(0,0,0,0.07);
+}
+html.pink .fin-card:active {
+  box-shadow: 1px 2px 0 0 #f3e8ff, 0 1px 4px rgba(0,0,0,0.03);
 }

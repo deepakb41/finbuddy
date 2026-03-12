@@ -22,7 +22,7 @@ function Card({ title, value, sub, cls, textCls, subCls }: {
   title: string; value: string; sub?: string; cls: string; textCls: string; subCls?: string;
 }) {
   return (
-    <div className={`rounded-2xl p-4 ${cls} flex flex-col gap-1 transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] animate-fade-in`}>
+    <div className={`rounded-2xl p-4 ${cls} flex flex-col gap-1 animate-fade-in fin-card`}>
       <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide">{title}</p>
       <p className={`text-xl font-bold ${textCls} leading-tight`}>{value}</p>
       {sub && <p className={`text-xs ${subCls ?? "text-gray-500 dark:text-gray-400"}`}>{sub}</p>}

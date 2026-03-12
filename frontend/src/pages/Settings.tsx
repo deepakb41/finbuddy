@@ -79,7 +79,7 @@ export function Settings() {
 
       <div className="max-w-lg mx-auto px-4 pt-4 space-y-4 animate-fade-in">
         {/* Profile */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
           <div className="flex items-center gap-4">
             <div className="w-14 h-14 rounded-full bg-teal-100 dark:bg-teal-900/40 flex items-center justify-center text-2xl font-bold text-teal-700 dark:text-teal-400">
               {(user?.email?.[0] || "U").toUpperCase()}
@@ -92,7 +92,7 @@ export function Settings() {
         </div>
 
         {/* Currency */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Currency</h2>
           <div className="grid grid-cols-2 gap-2">
             {CURRENCIES.map((c) => (
@@ -111,7 +111,7 @@ export function Settings() {
         </div>
 
         {/* Financial Goals */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">Financial Goals</h2>
           <div className="space-y-3">
             <div>
@@ -126,7 +126,7 @@ export function Settings() {
                 step={5}
                 value={savingsTarget}
                 onChange={(e) => handleSavingsTargetChange(parseInt(e.target.value))}
-                className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-full appearance-none cursor-pointer accent-teal-500"
+                className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-full appearance-none cursor-pointer accent-teal-500 finbuddy-slider"
               />
               <div className="flex justify-between text-xs text-gray-400 dark:text-gray-500 mt-1">
                 <span>5%</span>
@@ -141,7 +141,7 @@ export function Settings() {
         </div>
 
         {/* Recurring Payments */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200">Recurring Payments</h2>
             <span className="text-xs bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-400 px-2 py-0.5 rounded-full">{recurringTemplates.length}</span>
@@ -172,7 +172,7 @@ export function Settings() {
         </div>
 
         {/* About */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 mb-3">About</h2>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between"><span className="text-gray-500 dark:text-gray-400">App</span><span className="text-gray-700 dark:text-gray-200 font-medium">FinBuddy</span></div>
