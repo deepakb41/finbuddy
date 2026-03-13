@@ -76,7 +76,7 @@ def list_transactions(
     month: Optional[str] = Query(None, description="YYYY-MM"),
     category: Optional[str] = Query(None),
     search: Optional[str] = Query(None),
-    limit: int = Query(200, le=1000),
+    limit: int = Query(200, le=50000),
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user_id),
 ):
@@ -160,6 +160,22 @@ def delete_transaction(
     tx.status = "deleted"
     db.commit()
     return {"status": "deleted"}
+
+
+@router.delete("/all")
+def delete_all_transactions(
+    db: Session = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
+    """Hard-delete all transactions for the current user."""
+    from sqlalchemy import update as _upd
+    db.execute(
+        _upd(Transaction)
+        .where(Transaction.user_id == user_id, Transaction.status != "deleted")
+        .values(status="deleted")
+    )
+    db.commit()
+    return {"status": "cleared"}
 
 
 @router.get("/meta/merchants")

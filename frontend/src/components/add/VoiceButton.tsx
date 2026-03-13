@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Mic, MicOff } from "lucide-react";
 import { api } from "../../api/client";
 import { useVoiceInput } from "../../hooks/useVoiceInput";
 
@@ -43,11 +44,7 @@ export function VoiceButton({ onParsed }: Props) {
       qc.invalidateQueries({ queryKey: ["summary"] });
       qc.invalidateQueries({ queryKey: ["categories"] });
       setAdded(true);
-      setTimeout(() => {
-        setSuggestion(null);
-        setAdded(false);
-        setSwipeX(0);
-      }, 1200);
+      setTimeout(() => { setSuggestion(null); setAdded(false); setSwipeX(0); }, 1200);
     },
   });
 
@@ -60,47 +57,19 @@ export function VoiceButton({ onParsed }: Props) {
     }
   }, [parsed, parsedRef]);
 
-  const handleAccept = () => {
-    if (suggestion) {
-      onParsed(suggestion);
-      setSuggestion(null);
-    }
-  };
+  const handleAccept = () => { if (suggestion) { onParsed(suggestion); setSuggestion(null); } };
+  const handleDirectAdd = () => { if (suggestion && !addMutation.isPending) addMutation.mutate(); };
+  const handleDismiss = () => { setSuggestion(null); setSwipeX(0); };
+  const handleRetry = () => { setSuggestion(null); setParsedRef(null); setSwipeX(0); startListening(); };
 
-  const handleDirectAdd = () => {
-    if (suggestion && !addMutation.isPending) {
-      addMutation.mutate();
-    }
-  };
-
-  const handleDismiss = () => {
-    setSuggestion(null);
-    setSwipeX(0);
-  };
-
-  const handleRetry = () => {
-    setSuggestion(null);
-    setParsedRef(null);
-    setSwipeX(0);
-    startListening();
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-  };
-
+  const handleTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
   const handleTouchMove = (e: React.TouchEvent) => {
     if (touchStartX.current === null) return;
-    const dx = e.touches[0].clientX - touchStartX.current;
-    setSwipeX(Math.max(-120, Math.min(120, dx)));
+    setSwipeX(Math.max(-120, Math.min(120, e.touches[0].clientX - touchStartX.current)));
   };
-
   const handleTouchEnd = () => {
-    if (swipeX > 80) {
-      handleDirectAdd();
-    } else if (swipeX < -80) {
-      handleDismiss();
-    }
+    if (swipeX > 80) handleDirectAdd();
+    else if (swipeX < -80) handleDismiss();
     setSwipeX(0);
     touchStartX.current = null;
   };
@@ -153,8 +122,8 @@ export function VoiceButton({ onParsed }: Props) {
             ✎ Fill form
           </button>
           <button type="button" onClick={handleRetry}
-            className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg text-xs hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
-            🎤
+            className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+            <Mic size={12} />
           </button>
           <button type="button" onClick={handleDismiss}
             className="px-3 py-2 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-lg text-xs hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
@@ -166,18 +135,20 @@ export function VoiceButton({ onParsed }: Props) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
       <button
         type="button"
         onClick={isListening ? stopListening : startListening}
-        className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl font-medium text-sm transition-all ${
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
           isListening
-            ? "bg-red-500 text-white"
-            : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-teal-50 dark:hover:bg-teal-900/30 hover:text-teal-700 dark:hover:text-teal-400"
+            ? "bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400"
+            : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 hover:bg-teal-50 dark:hover:bg-teal-900/30 hover:text-teal-600 dark:hover:text-teal-400"
         }`}
       >
-        <span className={`text-lg ${isListening ? "animate-pulse" : ""}`}>{isListening ? "⏹" : "🎤"}</span>
-        {isListening ? "Listening… tap to stop" : "Voice Log"}
+        {isListening
+          ? <><MicOff size={13} className="animate-pulse" /><span>Listening… tap to stop</span></>
+          : <><Mic size={13} /><span>Voice log</span></>
+        }
       </button>
       {transcript && <p className="text-xs text-gray-500 dark:text-gray-400 px-1">Heard: <em>"{transcript}"</em></p>}
       {error && <p className="text-xs text-red-500 px-1">{error}</p>}

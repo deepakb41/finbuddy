@@ -108,17 +108,17 @@ html.dark .skeleton {
 
 /* ── Pink / Purple pastel theme ────────────────────────────────────────────── */
 html.pink body {
-  background-color: #fdf9ff;
+  background-color: #ffffff;
   color: #1e1b2e;
 }
 
-/* All backgrounds — soft pink-white tints */
-html.pink .bg-white    { background-color: #fefbff !important; }
-html.pink .bg-gray-50  { background-color: #fdf9ff !important; }
-html.pink .bg-gray-100 { background-color: #f9f5fe !important; }
-html.pink .bg-gray-800 { background-color: #faf6ff !important; }
-html.pink .bg-gray-900 { background-color: #fefbff !important; }
-html.pink .bg-gray-950 { background-color: #fdf9ff !important; }
+/* All backgrounds — pure white app background, cards stay white */
+html.pink .bg-white    { background-color: #ffffff !important; }
+html.pink .bg-gray-50  { background-color: #f9fafb !important; }
+html.pink .bg-gray-100 { background-color: #f3f4f6 !important; }
+html.pink .bg-gray-800 { background-color: #ffffff !important; }
+html.pink .bg-gray-900 { background-color: #f8f9fa !important; }
+html.pink .bg-gray-950 { background-color: #f9fafb !important; }
 
 /* Borders — all light neutral, no pink borders */
 html.pink .border-gray-100,
@@ -139,6 +139,9 @@ html.pink .bg-teal-950\/30   { background-color: #f3e8ff !important; }
 html.pink .bg-violet-950\/30 { background-color: #fdf4ff !important; }
 html.pink .bg-sky-950\/30    { background-color: #f5f3ff !important; }
 html.pink .bg-amber-950\/30  { background-color: #fce7f3 !important; }
+
+/* ── Brand name — never changes colour in any theme ── */
+.fin-brand { color: #0f766e !important; } /* teal-700 fixed */
 
 /* ── KPI card text ── */
 html.pink .text-rose-700,

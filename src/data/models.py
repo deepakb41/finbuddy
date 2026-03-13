@@ -2,6 +2,7 @@ from datetime import datetime
 from sqlalchemy import Boolean, Date, DateTime, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 from src.data.db import Base
+from typing import Optional
 
 class Transaction(Base):
     __tablename__ = "transactions"
@@ -74,6 +75,36 @@ class TransactionSuggestion(Base):
     category: Mapped[str | None] = mapped_column(String(64), nullable=True)
     tx_type: Mapped[str] = mapped_column(String(32), default="expense")
     status: Mapped[str] = mapped_column(String(16), default="pending")  # pending | accepted | rejected
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class UserProfile(Base):
+    __tablename__ = "user_profiles"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, unique=True, index=True)
+    monthly_income: Mapped[Optional[float]] = mapped_column(Numeric(12, 2), nullable=True)
+    savings_target_pct: Mapped[int] = mapped_column(Integer, default=20)
+    onboarding_completed: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+
+class RecurringTransaction(Base):
+    __tablename__ = "recurring_transactions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(Integer, index=True)
+    merchant_raw: Mapped[str] = mapped_column(String(255))
+    amount: Mapped[float] = mapped_column(Numeric(12, 2))
+    currency: Mapped[str] = mapped_column(String(8), default="INR")
+    category: Mapped[str] = mapped_column(String(64))
+    day_of_month: Mapped[int] = mapped_column(Integer, default=1)
+    months_remaining: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)  # None = indefinite
+    frequency: Mapped[str] = mapped_column(String(20), default="monthly")  # daily/weekly/monthly/quarterly
+    last_created_month: Mapped[Optional[str]] = mapped_column(String(7), nullable=True)  # YYYY-MM
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+    notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 

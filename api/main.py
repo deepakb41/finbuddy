@@ -1,6 +1,11 @@
 from __future__ import annotations
 
 import os
+from pathlib import Path
+from dotenv import load_dotenv
+
+# Load .env FIRST — before any module-level os.getenv() calls in routers/deps
+load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 
 from api.routers import transactions, insights, voice, budgets
-from api.routers import auth, suggestions, aa
+from api.routers import auth, suggestions, aa, profile
 from src.data.db import Base, engine
 
 # Create all tables (including new User, TransactionSuggestion)
@@ -42,16 +47,8 @@ app.mount("/static", StaticFiles(directory="api/static"), name="static")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:3000",
-        "https://finbuddy.vercel.app",
-        "https://finbuddy-nine.vercel.app",
-        "https://*.vercel.app",
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -63,6 +60,7 @@ app.include_router(voice.router,        prefix="/api")
 app.include_router(budgets.router,      prefix="/api")
 app.include_router(suggestions.router,  prefix="/api")
 app.include_router(aa.router,           prefix="/api")
+app.include_router(profile.router,      prefix="/api")
 
 
 @app.get("/api/health")

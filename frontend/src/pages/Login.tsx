@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../hooks/useAuth";
 
@@ -49,9 +50,9 @@ function A2HSBanner() {
             <p className="text-sm font-bold text-gray-800 dark:text-gray-100">Get the full app experience</p>
             {isIOS ? (
               <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 leading-relaxed">
-                For a native app feel with no browser bars — tap{" "}
+                For a native app feel with no browser bars — tap the{" "}
                 <span className="font-semibold text-teal-600 dark:text-teal-400">Share</span>{" "}
-                <span className="text-base">⎙</span> in Safari, then{" "}
+                <span className="text-base">⎙</span> button at the bottom of your screen, then{" "}
                 <span className="font-semibold text-teal-600 dark:text-teal-400">"Add to Home Screen"</span>
               </p>
             ) : (
@@ -88,6 +89,7 @@ type Step = "contact" | "otp";
 export function Login() {
   const { requestOTP, verifyOTP, googleSignIn } = useAuth();
   const navigate = useNavigate();
+  const qc = useQueryClient();
 
   const [step, setStep] = useState<Step>("contact");
   const [contact, setContact] = useState("");
@@ -157,6 +159,7 @@ export function Login() {
     setLoading(true);
     try {
       await verifyOTP(contact.trim(), code);
+      qc.clear();
       navigate("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid OTP");
@@ -187,6 +190,7 @@ export function Login() {
     setGoogleLoading(true);
     try {
       await googleSignIn(credentialResponse.credential);
+      qc.clear();
       navigate("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Google sign-in failed");
@@ -203,7 +207,7 @@ export function Login() {
           {/* Logo + Branding */}
           <div className="text-center mb-8">
             <FinLogo />
-            <h1 className="text-3xl font-bold text-teal-700 dark:text-teal-400 mt-3">FinBuddy</h1>
+            <h1 className="fin-brand text-3xl font-bold text-teal-700 dark:text-teal-400 mt-3">FinBuddy</h1>
             <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Your personal finance tracker</p>
           </div>
 

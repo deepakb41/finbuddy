@@ -1,13 +1,14 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { Lightbulb, AlertTriangle, Target, TrendingUp as TrendingUpIcon, TrendingUp, BarChart2 } from "lucide-react";
 import { api } from "../api/client";
 import { useTheme } from "../hooks/useTheme";
 import { ActivityRings } from "../components/ui/activity-rings";
 
 const FIXED_CATS = new Set(["Rent", "Finance & EMI", "Telecom", "Utilities & Bills", "Education", "Investments"]);
 const _currency = localStorage.getItem("finbuddy_currency") || "INR";
-const _symbol = ({ GBP: "£", INR: "₹", USD: "$", EUR: "€" } as Record<string, string>)[_currency] || _currency;
+const _symbol = ({ GBP: "£", INR: "₹", USD: "$", EUR: "€", AED: "د.إ" } as Record<string, string>)[_currency] || _currency;
 
 
 export function Insights() {
@@ -174,14 +175,16 @@ export function Insights() {
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 px-1 mb-2">Smart Insights</h2>
           <div className="grid grid-cols-2 gap-2">
             {[
-              { title: "Opportunity", icon: "💡", body: biggestOpportunity, loading: !summary || !categories },
-              { title: "Anomaly", icon: "⚠️", body: anomalyAlert, loading: !summary || !categories },
-              { title: "Progress", icon: "🎯", body: goalProgress, loading: !summary || !health },
-              { title: "Invest", icon: "📈", body: investBody, loading: !summary },
-            ].map(({ title, icon, body, loading }) => (
+              { title: "Opportunity", Icon: Lightbulb,     iconCls: "text-yellow-500 bg-yellow-50 dark:bg-yellow-900/20", body: biggestOpportunity, loading: !summary || !categories },
+              { title: "Anomaly",     Icon: AlertTriangle,  iconCls: "text-orange-500 bg-orange-50 dark:bg-orange-900/20", body: anomalyAlert,       loading: !summary || !categories },
+              { title: "Progress",    Icon: Target,          iconCls: "text-teal-500 bg-teal-50 dark:bg-teal-900/20",       body: goalProgress,        loading: !summary || !health },
+              { title: "Invest",      Icon: TrendingUpIcon,  iconCls: "text-violet-500 bg-violet-50 dark:bg-violet-900/20", body: investBody,          loading: !summary },
+            ].map(({ title, Icon, iconCls, body, loading }) => (
               <div key={title} className="bg-white dark:bg-gray-800 rounded-xl p-3 shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col gap-1.5 fin-card">
                 <div className="flex items-center gap-1.5">
-                  <span className="text-base">{icon}</span>
+                  <span className={`w-6 h-6 rounded-lg flex items-center justify-center flex-shrink-0 ${iconCls}`}>
+                    <Icon size={13} />
+                  </span>
                   <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wide leading-tight">{title}</p>
                 </div>
                 {loading ? (
@@ -195,6 +198,72 @@ export function Insights() {
             ))}
           </div>
         </div>
+
+        {/* ── Investment Overview ────────────────────────────────── */}
+        {(() => {
+          const INVEST_CATS = new Set(["Investments","SIP","Stocks","Index Fund","ETF","REIT","Bonds","Gold / Silver","Crypto","PPF / EPF","FD","NPS"]);
+          const investData = (categories || []).filter(c => INVEST_CATS.has(c.category) && (c.this_month > 0 || c.last_month > 0));
+          const totalThisMonth = investData.reduce((s, c) => s + c.this_month, 0);
+          const totalLastMonth = investData.reduce((s, c) => s + c.last_month, 0);
+          const chartData = investData.filter(c => c.this_month > 0).sort((a, b) => b.this_month - a.this_month);
+          const momChange = totalLastMonth > 0 ? ((totalThisMonth - totalLastMonth) / totalLastMonth * 100).toFixed(0) : null;
+
+          return (
+            <div>
+              <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-200 px-1 mb-2">Investment Overview</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card space-y-4">
+                {/* Summary row */}
+                <div className="flex gap-3">
+                  <div className="flex-1 bg-violet-50 dark:bg-violet-950/30 rounded-xl p-3">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <TrendingUp size={13} className="text-violet-500" />
+                      <p className="text-[10px] font-bold text-violet-500 uppercase tracking-wide">This Month</p>
+                    </div>
+                    <p className="text-lg font-bold text-violet-700 dark:text-violet-400">
+                      {symbol}{totalThisMonth.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                    </p>
+                    {momChange !== null && (
+                      <p className={`text-xs mt-0.5 ${parseFloat(momChange) >= 0 ? "text-emerald-600" : "text-rose-500"}`}>
+                        {parseFloat(momChange) >= 0 ? "▲" : "▼"} {Math.abs(parseFloat(momChange))}% vs last month
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex-1 bg-gray-50 dark:bg-gray-700/50 rounded-xl p-3">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <BarChart2 size={13} className="text-gray-500" />
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wide">Last Month</p>
+                    </div>
+                    <p className="text-lg font-bold text-gray-700 dark:text-gray-300">
+                      {symbol}{totalLastMonth.toLocaleString("en-IN", { maximumFractionDigits: 0 })}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">{investData.length} categories</p>
+                  </div>
+                </div>
+
+                {/* Breakdown chart */}
+                {chartData.length > 0 ? (
+                  <>
+                    <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Breakdown this month</p>
+                    <ResponsiveContainer width="100%" height={Math.max(60, chartData.length * 32)}>
+                      <BarChart data={chartData} layout="vertical" margin={{ left: 8, right: 8, top: 0, bottom: 0 }}>
+                        <XAxis type="number" hide />
+                        <YAxis type="category" dataKey="category" width={100} tick={{ fontSize: 10, fill: axisColor }} />
+                        <Tooltip
+                          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                          formatter={(v: any) => [`${symbol}${Number(v).toLocaleString("en-IN", { maximumFractionDigits: 0 })}`, "Invested"]}
+                          contentStyle={{ background: tooltipBg, border: `1px solid ${tooltipBorder}`, borderRadius: 8, fontSize: 11 }}
+                        />
+                        <Bar dataKey="this_month" fill="#7c3aed" radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </>
+                ) : (
+                  <p className="text-xs text-gray-400 dark:text-gray-500 text-center py-2">No investments recorded this month</p>
+                )}
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── Ask your finances ──────────────────────────────────── */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700 fin-card">

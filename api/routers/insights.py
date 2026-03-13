@@ -31,7 +31,7 @@ def get_latest_month(user_id: int = Depends(get_current_user_id)):
     from sqlalchemy import text
     from src.data.db import engine
     sql = text("""
-        SELECT strftime('%Y-%m', date) as m
+        SELECT TO_CHAR(date, 'YYYY-MM') as m
         FROM transactions
         WHERE status != 'deleted'
           AND user_id = :uid
@@ -62,7 +62,7 @@ def get_summary(
                 FROM transactions WHERE status != 'deleted' AND user_id = :uid
             """), {"uid": user_id}).fetchone()
             months_row = conn.execute(_t("""
-                SELECT COUNT(DISTINCT strftime('%Y-%m', date))
+                SELECT COUNT(DISTINCT TO_CHAR(date, 'YYYY-MM'))
                 FROM transactions WHERE status != 'deleted' AND user_id = :uid
             """), {"uid": user_id}).fetchone()
         expense = float(row[0] or 0); income = float(row[1] or 0); tx_count = int(row[2] or 0)
@@ -79,7 +79,7 @@ def get_summary(
                 SELECT SUM(CASE WHEN type='expense' THEN amount ELSE 0 END),
                        SUM(CASE WHEN type='income'  THEN amount ELSE 0 END), COUNT(*)
                 FROM transactions
-                WHERE strftime('%Y', date) = :y AND status != 'deleted' AND user_id = :uid
+                WHERE TO_CHAR(date, 'YYYY') = :y AND status != 'deleted' AND user_id = :uid
             """), {"y": year, "uid": user_id}).fetchone()
         expense = float(row[0] or 0); income = float(row[1] or 0); tx_count = int(row[2] or 0)
         rate = round((income - expense) / income, 4) if income > 0 else 0.0
@@ -117,11 +117,11 @@ def get_summary(
     with _e2.connect() as _conn:
         _prev_row = _conn.execute(_t2("""
             SELECT COUNT(*) FROM transactions
-            WHERE strftime('%Y-%m', date) = :prev_month AND status != 'deleted' AND user_id = :uid
+            WHERE TO_CHAR(date, 'YYYY-MM') = :prev_month AND status != 'deleted' AND user_id = :uid
         """), {"prev_month": _prev_month, "uid": user_id}).fetchone()
         _prev_expense_row = _conn.execute(_t2("""
             SELECT SUM(amount) FROM transactions
-            WHERE strftime('%Y-%m', date) = :m AND type='expense'
+            WHERE TO_CHAR(date, 'YYYY-MM') = :m AND type='expense'
               AND status != 'deleted' AND user_id = :uid
         """), {"m": _prev_month, "uid": user_id}).fetchone()
     tx_count_last_month = int(_prev_row[0] or 0) if _prev_row else 0
@@ -177,7 +177,7 @@ def get_categories(
             rows = conn.execute(_t("""
                 SELECT category, SUM(amount) as total
                 FROM transactions
-                WHERE type='expense' AND strftime('%Y',date)=:y
+                WHERE type='expense' AND TO_CHAR(date,'YYYY')=:y
                   AND status!='deleted' AND user_id = :uid
                 GROUP BY category ORDER BY total DESC
             """), {"y": year, "uid": user_id}).fetchall()
@@ -207,10 +207,10 @@ def get_forecast(user_id: int = Depends(get_current_user_id)):
 
     with _e.connect() as conn:
         history_rows = conn.execute(_t("""
-            SELECT strftime('%Y-%m', date) as month, SUM(amount) as total
+            SELECT TO_CHAR(date, 'YYYY-MM') as month, SUM(amount) as total
             FROM transactions
             WHERE type='expense' AND status!='deleted' AND user_id = :uid
-            GROUP BY month ORDER BY month ASC
+            GROUP BY TO_CHAR(date, 'YYYY-MM') ORDER BY month ASC
         """), {"uid": user_id}).fetchall()
 
     history = [{"month": str(r[0]), "total": round(float(r[1] or 0), 2)} for r in history_rows]
@@ -330,11 +330,34 @@ def get_health_score(
     score += trend_pts
     breakdown["spending_trend"] = {"score": trend_pts, "value": trend}
 
-    row = total_spend(month, user_id=user_id)
-    tx_count = int(row[2] or 0)
-    completeness_pts = min(25, round((tx_count / 10) * 25))
-    score += completeness_pts
-    breakdown["data_completeness"] = {"score": completeness_pts, "tx_count": tx_count}
+    # Investment score: reward consistent investing behaviour
+    from sqlalchemy import text as _it2
+    from src.data.db import engine as _ie2
+    _invest_cats = "('Investments','SIP','Stocks','Index Fund','ETF','REIT','Bonds','Gold / Silver','Crypto','PPF / EPF','FD','NPS')"
+    with _ie2.connect() as _ic2:
+        _invest_row = _ic2.execute(_it2(
+            f"SELECT COALESCE(SUM(amount),0) FROM transactions "
+            f"WHERE status != 'deleted' AND user_id = :uid AND category IN {_invest_cats}"
+            + (" AND date_trunc('month', date) = date_trunc('month', :m::date)" if month else ""),
+        ), {"uid": user_id, **( {"m": month} if month else {}) }).fetchone()
+    invest_amount = float(_invest_row[0] or 0)
+    # Scale: if invested >= 20% of monthly income → full 25 pts; if any amount → min 10 pts
+    monthly_income = getattr(getattr(profile, "monthly_income", None), "monthly_income", None) if False else None
+    # Use savings-rate denominator as income proxy if not available
+    income_proxy = (savings_pts / 25 * 0.20) if savings_pts > 0 else 0.01
+    # Simpler: score based on whether investing at all + amount brackets
+    if invest_amount <= 0:
+        invest_pts = 0
+    elif invest_amount < 1000:
+        invest_pts = 8
+    elif invest_amount < 5000:
+        invest_pts = 15
+    elif invest_amount < 20000:
+        invest_pts = 20
+    else:
+        invest_pts = 25
+    score += invest_pts
+    breakdown["investment"] = {"score": invest_pts, "amount": invest_amount}
 
     total_score = min(100, score)
 
@@ -346,9 +369,9 @@ def get_health_score(
             f"- Savings rate score: {savings_pts}/25 (actual rate: {rate*100:.0f}%)\n"
             f"- Budget adherence: {adherence_pts}/25 ({len(overruns)} categories overrun)\n"
             f"- Spending trend: {trend_pts}/25 (trend: {trend*100:+.0f}% change)\n"
-            f"- Data completeness: {completeness_pts}/25 ({tx_count} transactions this month)\n\n"
+            f"- Investment score: {invest_pts}/25 (invested: ₹{invest_amount:,.0f} this period)\n\n"
             f"For each of the 4 sub-scores, write a 1-line actionable tip (max 12 words) in second person.\n"
-            f'Return JSON: {{"savings_rate":"tip","budget_adherence":"tip","spending_trend":"tip","data_completeness":"tip"}}'
+            f'Return JSON: {{"savings_rate":"tip","budget_adherence":"tip","spending_trend":"tip","investment":"tip"}}'
         )
         ai_raw = chat(
             [

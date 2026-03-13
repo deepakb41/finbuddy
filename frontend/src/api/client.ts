@@ -64,6 +64,8 @@ export const api = {
       }),
     delete: (id: string) =>
       request<{ status: string }>(`/transactions/${id}`, { method: "DELETE" }),
+    deleteAll: () =>
+      request<{ status: string }>("/transactions/all", { method: "DELETE" }),
   },
 
   insights: {
@@ -179,6 +181,45 @@ export const api = {
       if (!res.ok) throw new Error(`Transcription failed: ${res.statusText}`);
       return res.json();
     },
+  },
+
+  profile: {
+    get: () =>
+      request<{
+        user_id: number; monthly_income: number | null;
+        savings_target_pct: number; onboarding_completed: boolean;
+      }>("/profile"),
+    upsert: (body: { monthly_income?: number | null; savings_target_pct?: number; onboarding_completed?: boolean }) =>
+      request<{ status: string }>("/profile", { method: "POST", body: JSON.stringify(body) }),
+    listRecurring: () =>
+      request<{
+        id: number; merchant_raw: string; amount: number; currency: string;
+        category: string; day_of_month: number; months_remaining: number | null;
+        frequency: string; last_created_month: string | null; notes: string | null;
+      }[]>("/profile/recurring"),
+    createRecurring: (body: {
+      merchant_raw: string; amount: number; currency?: string;
+      category?: string; day_of_month?: number; months_remaining?: number;
+      frequency?: string; notes?: string;
+    }) =>
+      request<{ id: number; status: string }>("/profile/recurring", {
+        method: "POST",
+        body: JSON.stringify(body),
+      }),
+    patchRecurring: (id: number, body: {
+      scope: "this_month" | "future";
+      merchant_raw?: string; amount?: number; currency?: string;
+      category?: string; day_of_month?: number; months_remaining?: number;
+      frequency?: string; notes?: string;
+    }) =>
+      request<{ status: string }>(`/profile/recurring/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(body),
+      }),
+    deleteRecurring: (id: number) =>
+      request<{ status: string }>(`/profile/recurring/${id}`, { method: "DELETE" }),
+    processRecurring: () =>
+      request<{ created: string[]; count: number }>("/profile/recurring/process", { method: "POST" }),
   },
 
   suggestions: {

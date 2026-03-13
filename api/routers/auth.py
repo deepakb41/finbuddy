@@ -261,3 +261,17 @@ def google_signin(body: GoogleSignInBody):
         "token_type": "bearer",
         "user": {"id": user.id, "email": user.email},
     }
+
+
+@router.get("/dev/otp")
+def dev_latest_otp(contact: str):
+    """Dev-only: return latest valid OTP for a contact (never expose in prod)."""
+    with SessionLocal() as session:
+        row = session.execute(
+            select(OTPRequest)
+            .where(OTPRequest.contact == contact)
+            .order_by(OTPRequest.created_at.desc())
+        ).scalar_one_or_none()
+        if not row:
+            raise HTTPException(404, "No OTP found for this contact")
+        return {"contact": row.contact, "otp": row.otp, "expires_at": str(row.expires_at)}

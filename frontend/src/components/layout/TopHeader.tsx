@@ -40,10 +40,10 @@ export function TopHeader() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800" style={{ transition: 'background-color 0.2s ease' }}>
       <div className="flex items-center justify-between px-4 h-14 max-w-lg mx-auto">
-        <div className="flex items-center gap-2">
+        <button type="button" onClick={() => navigate("/")} className="flex items-center gap-2">
           <img src="/logo.png" alt="FinBuddy" className="w-8 h-8" />
-          <span className="text-lg font-bold text-teal-700 dark:text-teal-400 tracking-tight">FinBuddy</span>
-        </div>
+          <span className="fin-brand text-lg font-bold text-teal-700 dark:text-teal-400 tracking-tight">FinBuddy</span>
+        </button>
         <div className="flex items-center gap-2">
           {/* Light / Dark toggle */}
           <div className="flex items-center gap-1.5">

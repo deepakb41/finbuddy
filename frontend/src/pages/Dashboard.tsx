@@ -1,17 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { api } from "../api/client";
 import { SummaryCards } from "../components/dashboard/SummaryCards";
 import { CategoryDonut } from "../components/dashboard/CategoryDonut";
 import { MonthlyTrendChart } from "../components/dashboard/MonthlyTrendChart";
 import { HealthScore } from "../components/dashboard/HealthScore";
 import { ForecastTrend } from "../components/dashboard/ForecastTrend";
+import { InvestmentChart } from "../components/dashboard/InvestmentChart";
 
 const CURRENCIES: { code: string; symbol: string }[] = [
   { code: "INR", symbol: "₹" },
   { code: "GBP", symbol: "£" },
   { code: "USD", symbol: "$" },
   { code: "EUR", symbol: "€" },
+  { code: "AED", symbol: "د.إ" },
 ];
 
 type ViewMode = "monthly" | "yearly" | "alltime";
@@ -80,6 +82,30 @@ export function Dashboard() {
     queryFn: () => api.insights.healthScore(viewMode === "monthly" ? activeMonth : undefined),
     refetchInterval: 60_000,
   });
+
+  const { data: profile } = useQuery({
+    queryKey: ["profile"],
+    queryFn: () => api.profile.get(),
+    staleTime: 60_000,
+  });
+
+  // Use actual logged income; fall back to profile monthly_income for monthly view
+  const totalIncomeForDonut =
+    (summary?.total_income ?? 0) > 0
+      ? (summary?.total_income ?? 0)
+      : viewMode === "monthly"
+      ? (profile?.monthly_income ?? 0)
+      : 0;
+
+  const INVEST_CATS = new Set(["Investments","SIP","Stocks","Index Fund","ETF","REIT","Bonds","Gold / Silver","Crypto","PPF / EPF","FD","NPS"]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const groupedCategories = useMemo(() => {
+    if (!categories) return undefined;
+    const investTotal = categories.filter(c => INVEST_CATS.has(c.category)).reduce((s, c) => s + c.this_month, 0);
+    const nonInvest = categories.filter(c => !INVEST_CATS.has(c.category));
+    if (investTotal > 0) return [...nonInvest, { category: "Investments", this_month: investTotal, last_month: 0 }];
+    return nonInvest;
+  }, [categories]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-24">
@@ -174,10 +200,13 @@ export function Dashboard() {
           <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Spending by Category</h2>
           {loadingCats ? (
             <div className="h-48 bg-gray-100 dark:bg-gray-700 rounded-xl animate-pulse" />
-          ) : categories ? (
-            <CategoryDonut data={categories} symbol={symbol} totalIncome={summary?.total_income ?? 0} />
+          ) : groupedCategories ? (
+            <CategoryDonut data={groupedCategories} symbol={symbol} totalIncome={totalIncomeForDonut} />
           ) : null}
         </div>
+
+        {/* Investment Chart */}
+        <InvestmentChart categories={categories} symbol={symbol} />
 
         {/* Forecast Trend */}
         <div className="bg-white dark:bg-gray-800 rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-700/50 fin-card">

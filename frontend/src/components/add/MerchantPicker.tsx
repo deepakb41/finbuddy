@@ -55,11 +55,10 @@ export function MerchantPicker({ value, onChange }: Props) {
   const ref = useRef<HTMLDivElement>(null);
 
   const lowerVal = value.toLowerCase();
-  // Up to 4 matches + Other at the end = 5 total
   const suggestions: string[] = [
     ...INDIAN_MERCHANTS.filter(
       (s) => !lowerVal || s.toLowerCase().includes(lowerVal)
-    ).slice(0, 4),
+    ),
     "Other",
   ];
 
@@ -102,7 +101,7 @@ export function MerchantPicker({ value, onChange }: Props) {
       />
 
       {open && (
-        <ul className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-20 overflow-hidden">
+        <ul className="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-xl shadow-lg z-20 overflow-hidden max-h-60 overflow-y-auto">
           {suggestions.map((s) => (
             <li key={s}>
               <button

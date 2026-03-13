@@ -19,24 +19,24 @@ _PARSE_PROMPT = """\
 You are a bank SMS/email parser for an Indian user. Extract transaction details and return ONLY valid JSON:
 {"merchant": <string or null>, "amount": <number or null>, "currency": "INR", "date": <"YYYY-MM-DD" or null>, "tx_type": "expense"|"income"|"investment", "category": <string or null>}
 
-Category must be exactly one of: Food & Dining, Groceries, Transport, Shopping, Entertainment, Travel, Rent, Utilities & Bills, Telecom, Healthcare, Fitness, Finance & EMI, Investments, Personal Care, Education, Other
+Category must be exactly one of: Food & Dining, Groceries, Transport, Shopping, Entertainment, Travel, Rent, Utilities & Bills, Healthcare, Fitness, EMI, Investments, Personal Care, Gifting, Education, Other
 
 Rules:
 - Swiggy, Zomato, restaurant, cafe, hotel dining → "Food & Dining"
 - BigBasket, Blinkit, Zepto, grocery, supermarket → "Groceries"
 - Uber, Ola, Rapido, Metro, fuel, petrol → "Transport"
-- Electricity, water, gas, internet, broadband, DTH → "Utilities & Bills"
-- Jio, Airtel, Vi, BSNL, mobile recharge → "Telecom"
-- EMI, loan repayment, insurance premium, Bajaj Finance → "Finance & EMI"
+- Electricity, water, gas, internet, broadband, DTH, Jio, Airtel, Vi, BSNL, mobile recharge → "Utilities & Bills"
+- EMI, loan repayment, insurance premium, Bajaj Finance → "EMI"
 - SIP, mutual fund, stocks, Zerodha, Groww, Kuvera → category "Investments", tx_type "investment"
 - Salary, credited by employer → tx_type "income", category "Other"
+- Gift, donation, flowers → "Gifting"
 - Strip Rs., ₹, INR from amount; return as plain number
 
 Examples:
 "Dear UPI user, Rs.450.00 debited to Swiggy" → {"merchant":"Swiggy","amount":450,"currency":"INR","date":null,"tx_type":"expense","category":"Food & Dining"}
 "Salary credit ₹80000 from Acme Corp" → {"merchant":"Acme Corp","amount":80000,"currency":"INR","date":null,"tx_type":"income","category":"Other"}
-"EMI of Rs.8000 debited for Bajaj Finance" → {"merchant":"Bajaj Finance","amount":8000,"currency":"INR","date":null,"tx_type":"expense","category":"Finance & EMI"}
-"Jio recharge Rs.299 successful" → {"merchant":"Jio","amount":299,"currency":"INR","date":null,"tx_type":"expense","category":"Telecom"}
+"EMI of Rs.8000 debited for Bajaj Finance" → {"merchant":"Bajaj Finance","amount":8000,"currency":"INR","date":null,"tx_type":"expense","category":"EMI"}
+"Jio recharge Rs.299 successful" → {"merchant":"Jio","amount":299,"currency":"INR","date":null,"tx_type":"expense","category":"Utilities & Bills"}
 """
 
 

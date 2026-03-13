@@ -9,16 +9,39 @@ const MONTHS = Array.from({ length: 6 }, (_, i) => {
   return d.toISOString().slice(0, 7);
 });
 
+const FILTER_CATEGORIES = [
+  "All", "Food & Dining", "Groceries", "Transport", "Travel",
+  "Shopping", "Entertainment", "Utilities & Bills", "Healthcare",
+  "Fitness", "Rent", "Education", "Personal Care", "Gifting",
+  "Lend & Split", "Investments", "Other / Misc",
+];
+
+type SortKey = "date_desc" | "date_asc" | "amount_desc" | "amount_asc";
+
+const SORT_OPTIONS: { key: SortKey; label: string }[] = [
+  { key: "date_desc",   label: "Newest" },
+  { key: "date_asc",    label: "Oldest" },
+  { key: "amount_desc", label: "Highest" },
+  { key: "amount_asc",  label: "Lowest" },
+];
+
 export function History() {
   const [search, setSearch] = useState("");
   const [month, setMonth] = useState(MONTHS[0]);
+  const [filterCategory, setFilterCategory] = useState("");
+  const [sortBy, setSortBy] = useState<SortKey>("date_desc");
 
   const currency = localStorage.getItem("finbuddy_currency") || "INR";
-  const symbol = { GBP: "£", INR: "₹", USD: "$", EUR: "€" }[currency] || currency;
+  const symbol = { GBP: "£", INR: "₹", USD: "$", EUR: "€", AED: "د.إ" }[currency] || currency;
 
   const { data: transactions, isLoading } = useQuery({
-    queryKey: ["transactions", month, search],
-    queryFn: () => api.transactions.list({ month, search: search || undefined, limit: 200 }),
+    queryKey: ["transactions", month, search, filterCategory],
+    queryFn: () => api.transactions.list({
+      month,
+      search: search || undefined,
+      category: filterCategory || undefined,
+      limit: 200,
+    }),
     refetchInterval: 30_000,
   });
 
@@ -32,7 +55,14 @@ export function History() {
     { expense: 0, income: 0 }
   ) || { expense: 0, income: 0 };
 
-  const visible = transactions?.filter((t) => t.status !== "deleted") || [];
+  const visible = (transactions?.filter((t) => t.status !== "deleted") || []);
+
+  const sorted = [...visible].sort((a, b) => {
+    if (sortBy === "date_desc")   return b.date.localeCompare(a.date);
+    if (sortBy === "date_asc")    return a.date.localeCompare(b.date);
+    if (sortBy === "amount_desc") return b.amount - a.amount;
+    return a.amount - b.amount;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-24">
@@ -67,6 +97,28 @@ export function History() {
             onChange={(e) => setSearch(e.target.value)}
             className="w-full border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-teal-400"
           />
+
+          {/* Filter + Sort row */}
+          <div className="flex gap-2">
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="flex-1 text-xs border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-teal-400"
+            >
+              {FILTER_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat === "All" ? "" : cat}>{cat}</option>
+              ))}
+            </select>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortKey)}
+              className="text-xs border border-gray-200 dark:border-gray-600 dark:bg-gray-800 dark:text-white rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-teal-400"
+            >
+              {SORT_OPTIONS.map((o) => (
+                <option key={o.key} value={o.key}>{o.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -87,7 +139,7 @@ export function History() {
           </div>
           <div className="flex-1 bg-gray-100 dark:bg-gray-800 rounded-xl p-3 text-center">
             <p className="text-xs text-gray-500 dark:text-gray-400">Count</p>
-            <p className="text-lg font-bold text-gray-700 dark:text-gray-300">{visible.length}</p>
+            <p className="text-lg font-bold text-gray-700 dark:text-gray-300">{sorted.length}</p>
           </div>
         </div>
 
@@ -104,14 +156,14 @@ export function History() {
                 <div className="h-4 bg-gray-100 dark:bg-gray-700 rounded animate-pulse w-16" />
               </div>
             ))
-          ) : visible.length === 0 ? (
+          ) : sorted.length === 0 ? (
             <div className="py-12 text-center text-gray-400 dark:text-gray-500 text-sm">
               <p className="text-3xl mb-2">🔍</p>
               No transactions found
             </div>
           ) : (
             <div className="px-4">
-              {visible.map((tx) => (
+              {sorted.map((tx) => (
                 <TransactionItem key={tx.transaction_id} tx={tx} symbol={symbol} />
               ))}
             </div>
