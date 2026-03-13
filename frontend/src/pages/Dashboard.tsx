@@ -45,7 +45,7 @@ export function Dashboard() {
   const { data: latestMonthData } = useQuery({
     queryKey: ["latest-month"],
     queryFn: () => api.insights.latestMonth(),
-    staleTime: Infinity,
+    staleTime: 0,
   });
 
   const activeMonth = selectedMonth ?? latestMonthData?.month ?? new Date().toISOString().slice(0, 7);

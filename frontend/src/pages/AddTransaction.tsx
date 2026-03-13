@@ -247,6 +247,8 @@ export function AddTransaction() {
       qc.invalidateQueries({ queryKey: ["transactions"] });
       qc.invalidateQueries({ queryKey: ["summary"] });
       qc.invalidateQueries({ queryKey: ["categories"] });
+      qc.invalidateQueries({ queryKey: ["latest-month"] });
+      qc.invalidateQueries({ queryKey: ["health-score"] });
       setForm({ date: today(), merchant_raw: "", amount: "", currency: form.currency, category: "", notes: "" });
       setSuccess(true);
       setTimeout(() => setSuccess(false), 2000);
@@ -305,6 +307,8 @@ export function AddTransaction() {
       qc.invalidateQueries({ queryKey: ["summary"] });
       qc.invalidateQueries({ queryKey: ["categories"] });
       qc.invalidateQueries({ queryKey: ["recurring"] });
+      qc.invalidateQueries({ queryKey: ["latest-month"] });
+      qc.invalidateQueries({ queryKey: ["health-score"] });
       setForm({ date: today(), merchant_raw: "", amount: "", currency: form.currency, category: "", notes: "" });
       setIsRecurring(false);
       setRecurringDay("1");

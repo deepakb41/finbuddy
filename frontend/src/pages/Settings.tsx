@@ -323,7 +323,7 @@ export function Settings() {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-28">
       {/* Header */}
-      <div className="bg-white dark:bg-gray-900 px-4 pt-12 pb-4 border-b border-gray-100 dark:border-gray-800 shadow-sm">
+      <div className="bg-white dark:bg-gray-900 px-4 pt-4 pb-4 border-b border-gray-100 dark:border-gray-800 shadow-sm">
         <div className="max-w-lg mx-auto">
           <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">Settings</h1>
         </div>

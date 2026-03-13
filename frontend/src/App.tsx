@@ -1,8 +1,10 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { RefreshCw } from "lucide-react";
 import { BottomNav } from "./components/layout/BottomNav";
 import { TopHeader } from "./components/layout/TopHeader";
+import { usePullToRefresh } from "./hooks/usePullToRefresh";
 import { Dashboard } from "./pages/Dashboard";
 import { AddTransaction } from "./pages/AddTransaction";
 import { History } from "./pages/History";
@@ -45,12 +47,21 @@ function OnboardingGuard() {
 function PrivateRoutes() {
   const { isAuthed } = useAuth();
   useAutoProcessRecurring();
+  const { refreshing } = usePullToRefresh();
 
   if (!isAuthed) return <Navigate to="/login" replace />;
   return (
     <>
       <OnboardingGuard />
       <TopHeader />
+      {refreshing && (
+        <div className="fixed top-14 left-0 right-0 z-40 flex justify-center py-2 pointer-events-none">
+          <div className="bg-white dark:bg-gray-800 rounded-full shadow-md px-3 py-1.5 flex items-center gap-2 text-xs text-teal-600 dark:text-teal-400 font-medium">
+            <RefreshCw size={12} className="animate-spin" />
+            Refreshing…
+          </div>
+        </div>
+      )}
       <div className="pt-14 pb-16">
         <Routes>
           <Route path="/"           element={<Dashboard />} />

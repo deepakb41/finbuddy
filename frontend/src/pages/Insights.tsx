@@ -124,7 +124,7 @@ export function Insights() {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pb-24">
-      <div className="bg-white dark:bg-gray-900 px-4 pt-12 pb-4 shadow-sm border-b border-gray-100 dark:border-gray-800">
+      <div className="bg-white dark:bg-gray-900 px-4 pt-4 pb-4 shadow-sm border-b border-gray-100 dark:border-gray-800">
         <div className="max-w-lg mx-auto">
           <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">AI Insights</h1>
           <p className="text-xs text-gray-500 dark:text-gray-400">Powered by Groq · Llama 3.3</p>
