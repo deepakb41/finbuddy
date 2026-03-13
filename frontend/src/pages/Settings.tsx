@@ -577,7 +577,7 @@ export function Settings() {
           {[
             ["Version", "1.1.0"],
             ["AI Engine", "Groq · Llama 3.3"],
-            ["Database", "Supabase PostgreSQL"],
+            ["Database", "SQLite · Render Disk"],
           ].map(([k, v]) => (
             <div key={k} className={`${rowCls}`}>
               <p className="flex-1 text-sm text-gray-500 dark:text-gray-400">{k}</p>
