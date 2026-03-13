@@ -244,7 +244,17 @@ def process_recurring(user_id: int = Depends(get_current_user_id)):
 
         for rec in rows:
             if rec.last_created_month == current_month:
-                continue  # already created this month
+                # Verify the transaction still exists and wasn't cleared
+                existing = session.execute(
+                    select(Transaction).where(
+                        Transaction.user_id == user_id,
+                        Transaction.notes.like(f"%recurring:{rec.id}%"),
+                        Transaction.status != "deleted",
+                    )
+                ).scalar_one_or_none()
+                if existing:
+                    continue
+                # Transaction was deleted — fall through to re-create it
 
             # Only create if today >= day_of_month (or it's the last day)
             target_day = min(rec.day_of_month, today.day if today.day >= rec.day_of_month else 0)

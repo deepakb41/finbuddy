@@ -167,12 +167,19 @@ def delete_all_transactions(
     db: Session = Depends(get_db),
     user_id: int = Depends(get_current_user_id),
 ):
-    """Hard-delete all transactions for the current user."""
+    """Soft-delete all transactions and reset recurring so they re-create next open."""
     from sqlalchemy import update as _upd
+    from src.data.models import RecurringTransaction
     db.execute(
         _upd(Transaction)
         .where(Transaction.user_id == user_id, Transaction.status != "deleted")
         .values(status="deleted")
+    )
+    # Reset last_created_month so process_recurring re-creates this month's transactions
+    db.execute(
+        _upd(RecurringTransaction)
+        .where(RecurringTransaction.user_id == user_id, RecurringTransaction.is_active == True)
+        .values(last_created_month=None)
     )
     db.commit()
     return {"status": "cleared"}
