@@ -18,13 +18,13 @@ def monthly_spend_by_category(user_id: int | None = None):
     uc = _uid_clause(user_id)
     sql = text(f"""
         SELECT
-          TO_CHAR(date, 'YYYY-MM') as month,
+          strftime('%Y-%m', date) as month,
           category,
           SUM(amount) as total_amount
         FROM transactions
         WHERE type = 'expense'
           {uc}
-        GROUP BY TO_CHAR(date, 'YYYY-MM'), category
+        GROUP BY strftime('%Y-%m', date), category
         ORDER BY month DESC, total_amount DESC
     """)
     with engine.connect() as conn:
@@ -37,17 +37,18 @@ def monthly_trend(n_months: int = 6, user_id: int | None = None):
     uc = _uid_clause(user_id)
     sql = text(f"""
         SELECT
-          TO_CHAR(date, 'YYYY-MM') as month,
+          strftime('%Y-%m', date) as month,
           category,
           SUM(amount) as total_amount
         FROM transactions
         WHERE type = 'expense'
-          AND date >= CURRENT_DATE - (:n_months || ' months')::INTERVAL
+          AND date >= date('now', '-{n_months} months')
+          AND status != 'deleted'
           {uc}
-        GROUP BY TO_CHAR(date, 'YYYY-MM'), category
+        GROUP BY strftime('%Y-%m', date), category
         ORDER BY month ASC, total_amount DESC
     """)
-    params = _uid_params(user_id, {"n_months": n_months})
+    params = _uid_params(user_id, {})
     with engine.connect() as conn:
         rows = conn.execute(sql, params).fetchall()
     return rows
@@ -56,10 +57,10 @@ def monthly_trend(n_months: int = 6, user_id: int | None = None):
 def top_merchants(month: str | None = None, user_id: int | None = None):
     """Top 10 merchants by spend for a given month (default: current month)."""
     if month:
-        where = "AND TO_CHAR(date, 'YYYY-MM') = :month"
+        where = "AND strftime('%Y-%m', date) = :month"
         params: dict = {"month": month}
     else:
-        where = "AND TO_CHAR(date, 'YYYY-MM') = TO_CHAR(CURRENT_DATE, 'YYYY-MM')"
+        where = "AND strftime('%Y-%m', date) = strftime('%Y-%m', 'now')"
         params = {}
     uc = _uid_clause(user_id)
     sql = text(f"""
@@ -69,6 +70,7 @@ def top_merchants(month: str | None = None, user_id: int | None = None):
           COUNT(*) as tx_count
         FROM transactions
         WHERE type = 'expense'
+          AND status != 'deleted'
           {where}
           {uc}
         GROUP BY merchant
@@ -86,13 +88,14 @@ def category_comparison(user_id: int | None = None):
     sql = text(f"""
         SELECT
           category,
-          SUM(CASE WHEN TO_CHAR(date, 'YYYY-MM') = TO_CHAR(CURRENT_DATE, 'YYYY-MM')
+          SUM(CASE WHEN strftime('%Y-%m', date) = strftime('%Y-%m', 'now')
                    THEN amount ELSE 0 END) as this_month,
-          SUM(CASE WHEN TO_CHAR(date, 'YYYY-MM') = TO_CHAR(CURRENT_DATE - INTERVAL '1 month', 'YYYY-MM')
+          SUM(CASE WHEN strftime('%Y-%m', date) = strftime('%Y-%m', date('now', '-1 month'))
                    THEN amount ELSE 0 END) as last_month
         FROM transactions
         WHERE type = 'expense'
-          AND date >= CURRENT_DATE - INTERVAL '2 months'
+          AND status != 'deleted'
+          AND date >= date('now', '-2 months')
           {uc}
         GROUP BY category
         ORDER BY this_month DESC
@@ -105,10 +108,10 @@ def category_comparison(user_id: int | None = None):
 def total_spend(month: str | None = None, user_id: int | None = None):
     """Returns (total_expense, total_income, tx_count) for a month."""
     if month:
-        where = "TO_CHAR(date, 'YYYY-MM') = :month"
+        where = "strftime('%Y-%m', date) = :month"
         params: dict = {"month": month}
     else:
-        where = "TO_CHAR(date, 'YYYY-MM') = TO_CHAR(CURRENT_DATE, 'YYYY-MM')"
+        where = "strftime('%Y-%m', date) = strftime('%Y-%m', 'now')"
         params = {}
     uc = _uid_clause(user_id)
     sql = text(f"""
@@ -118,6 +121,7 @@ def total_spend(month: str | None = None, user_id: int | None = None):
           COUNT(*) as tx_count
         FROM transactions
         WHERE {where}
+          AND status != 'deleted'
           {uc}
     """)
     with engine.connect() as conn:
@@ -168,13 +172,13 @@ def budget_vs_actual(month: str | None = None, user_id: int | None = None) -> li
     from sqlalchemy import select as sa_select
 
     uc = _uid_clause(user_id)
+    month_filter = ":month" if month else "strftime('%Y-%m', 'now')"
     spend_sql = text(f"""
         SELECT category, SUM(amount) as spent
         FROM transactions
         WHERE type = 'expense'
-          AND TO_CHAR(date, 'YYYY-MM') = {
-            ':month' if month else "TO_CHAR(CURRENT_DATE, 'YYYY-MM')"
-          }
+          AND status != 'deleted'
+          AND strftime('%Y-%m', date) = {month_filter}
           {uc}
         GROUP BY category
     """)
@@ -222,16 +226,17 @@ def spending_trend_direction(n_months: int = 3, user_id: int | None = None) -> f
     uc = _uid_clause(user_id)
     sql = text(f"""
         SELECT
-          TO_CHAR(date, 'YYYY-MM') as month,
+          strftime('%Y-%m', date) as month,
           SUM(amount) as total
         FROM transactions
         WHERE type = 'expense'
-          AND date >= CURRENT_DATE - (:n_months || ' months')::INTERVAL
+          AND status != 'deleted'
+          AND date >= date('now', '-{n_months} months')
           {uc}
-        GROUP BY month
+        GROUP BY strftime('%Y-%m', date)
         ORDER BY month ASC
     """)
-    params = _uid_params(user_id, {"n_months": n_months})
+    params = _uid_params(user_id, {})
     with engine.connect() as conn:
         rows = conn.execute(sql, params).fetchall()
     if len(rows) < 2:

@@ -31,7 +31,7 @@ def get_latest_month(user_id: int = Depends(get_current_user_id)):
     from sqlalchemy import text
     from src.data.db import engine
     sql = text("""
-        SELECT TO_CHAR(date, 'YYYY-MM') as m
+        SELECT strftime('%Y-%m', date) as m
         FROM transactions
         WHERE status != 'deleted'
           AND user_id = :uid
@@ -62,7 +62,7 @@ def get_summary(
                 FROM transactions WHERE status != 'deleted' AND user_id = :uid
             """), {"uid": user_id}).fetchone()
             months_row = conn.execute(_t("""
-                SELECT COUNT(DISTINCT TO_CHAR(date, 'YYYY-MM'))
+                SELECT COUNT(DISTINCT strftime('%Y-%m', date))
                 FROM transactions WHERE status != 'deleted' AND user_id = :uid
             """), {"uid": user_id}).fetchone()
         expense = float(row[0] or 0); income = float(row[1] or 0); tx_count = int(row[2] or 0)
@@ -79,7 +79,7 @@ def get_summary(
                 SELECT SUM(CASE WHEN type='expense' THEN amount ELSE 0 END),
                        SUM(CASE WHEN type='income'  THEN amount ELSE 0 END), COUNT(*)
                 FROM transactions
-                WHERE TO_CHAR(date, 'YYYY') = :y AND status != 'deleted' AND user_id = :uid
+                WHERE strftime('%Y', date) = :y AND status != 'deleted' AND user_id = :uid
             """), {"y": year, "uid": user_id}).fetchone()
         expense = float(row[0] or 0); income = float(row[1] or 0); tx_count = int(row[2] or 0)
         rate = round((income - expense) / income, 4) if income > 0 else 0.0
@@ -117,11 +117,11 @@ def get_summary(
     with _e2.connect() as _conn:
         _prev_row = _conn.execute(_t2("""
             SELECT COUNT(*) FROM transactions
-            WHERE TO_CHAR(date, 'YYYY-MM') = :prev_month AND status != 'deleted' AND user_id = :uid
+            WHERE strftime('%Y-%m', date) = :prev_month AND status != 'deleted' AND user_id = :uid
         """), {"prev_month": _prev_month, "uid": user_id}).fetchone()
         _prev_expense_row = _conn.execute(_t2("""
             SELECT SUM(amount) FROM transactions
-            WHERE TO_CHAR(date, 'YYYY-MM') = :m AND type='expense'
+            WHERE strftime('%Y-%m', date) = :m AND type='expense'
               AND status != 'deleted' AND user_id = :uid
         """), {"m": _prev_month, "uid": user_id}).fetchone()
     tx_count_last_month = int(_prev_row[0] or 0) if _prev_row else 0
@@ -177,17 +177,46 @@ def get_categories(
             rows = conn.execute(_t("""
                 SELECT category, SUM(amount) as total
                 FROM transactions
-                WHERE type='expense' AND TO_CHAR(date,'YYYY')=:y
+                WHERE type='expense' AND strftime('%Y', date)=:y
                   AND status!='deleted' AND user_id = :uid
                 GROUP BY category ORDER BY total DESC
             """), {"y": year, "uid": user_id}).fetchall()
         return [{"category": r[0], "this_month": float(r[1] or 0), "last_month": 0.0} for r in rows]
+
+    if month:
+        from sqlalchemy import text as _tm
+        from src.data.db import engine as _em
+        with _em.connect() as conn:
+            rows = conn.execute(_tm("""
+                SELECT category,
+                       SUM(CASE WHEN strftime('%Y-%m', date) = :m THEN amount ELSE 0 END) as this_month,
+                       SUM(CASE WHEN strftime('%Y-%m', date) = :prev THEN amount ELSE 0 END) as last_month
+                FROM transactions
+                WHERE type='expense' AND status!='deleted' AND user_id = :uid
+                  AND strftime('%Y-%m', date) IN (:m, :prev)
+                GROUP BY category ORDER BY this_month DESC
+            """), {
+                "m": month,
+                "prev": _prev_month_str(month),
+                "uid": user_id,
+            }).fetchall()
+        return [{"category": r[0], "this_month": float(r[1] or 0), "last_month": float(r[2] or 0)} for r in rows]
 
     rows = category_comparison(user_id=user_id)
     return [
         {"category": r[0], "this_month": float(r[1] or 0), "last_month": float(r[2] or 0)}
         for r in rows
     ]
+
+
+def _prev_month_str(month: str) -> str:
+    """Given 'YYYY-MM', return the previous month as 'YYYY-MM'."""
+    y, m = map(int, month.split("-"))
+    m -= 1
+    if m == 0:
+        m = 12
+        y -= 1
+    return f"{y}-{m:02d}"
 
 
 _forecast_cache: dict = {}
@@ -207,10 +236,10 @@ def get_forecast(user_id: int = Depends(get_current_user_id)):
 
     with _e.connect() as conn:
         history_rows = conn.execute(_t("""
-            SELECT TO_CHAR(date, 'YYYY-MM') as month, SUM(amount) as total
+            SELECT strftime('%Y-%m', date) as month, SUM(amount) as total
             FROM transactions
             WHERE type='expense' AND status!='deleted' AND user_id = :uid
-            GROUP BY TO_CHAR(date, 'YYYY-MM') ORDER BY month ASC
+            GROUP BY strftime('%Y-%m', date) ORDER BY month ASC
         """), {"uid": user_id}).fetchall()
 
     history = [{"month": str(r[0]), "total": round(float(r[1] or 0), 2)} for r in history_rows]
@@ -338,14 +367,10 @@ def get_health_score(
         _invest_row = _ic2.execute(_it2(
             f"SELECT COALESCE(SUM(amount),0) FROM transactions "
             f"WHERE status != 'deleted' AND user_id = :uid AND category IN {_invest_cats}"
-            + (" AND date_trunc('month', date) = date_trunc('month', :m::date)" if month else ""),
+            + (" AND strftime('%Y-%m', date) = :m" if month else ""),
         ), {"uid": user_id, **( {"m": month} if month else {}) }).fetchone()
     invest_amount = float(_invest_row[0] or 0)
-    # Scale: if invested >= 20% of monthly income → full 25 pts; if any amount → min 10 pts
-    monthly_income = getattr(getattr(profile, "monthly_income", None), "monthly_income", None) if False else None
-    # Use savings-rate denominator as income proxy if not available
-    income_proxy = (savings_pts / 25 * 0.20) if savings_pts > 0 else 0.01
-    # Simpler: score based on whether investing at all + amount brackets
+
     if invest_amount <= 0:
         invest_pts = 0
     elif invest_amount < 1000:

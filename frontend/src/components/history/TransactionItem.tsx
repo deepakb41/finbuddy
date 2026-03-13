@@ -1,30 +1,18 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { DollarSign, type LucideIcon } from "lucide-react";
 import { api } from "../../api/client";
 import type { Transaction } from "../../api/client";
 import { CATEGORIES as CAT_LIST } from "../add/CategoryGrid";
 
-const CATEGORY_ICONS: Record<string, string> = {
-  "Food & Dining":    "🍔",
-  "Groceries":        "🛒",
-  "Transport":        "🚗",
-  "Travel":           "✈️",
-  "Shopping":         "🛍️",
-  "Entertainment":    "🎬",
-  "Utilities & Bills":"💡",
-  "Telecom":          "📱",
-  "Healthcare":       "💊",
-  "Fitness":          "💪",
-  "Rent":             "🏠",
-  "Education":        "📚",
-  "Finance & EMI":    "💳",
-  "Investments":      "📈",
-  "Personal Care":    "💅",
-  "Lend & Split":     "🤝",
-  "Other / Misc":     "📦",
-  "Income":           "💰",
-  "Salary":           "💰",
-};
+// Build a map from category label → Lucide icon component
+const CATEGORY_ICON_MAP: Record<string, LucideIcon> = Object.fromEntries(
+  CAT_LIST.map((c) => [c.label, c.Icon])
+);
+
+const CATEGORY_COLOR_MAP: Record<string, string> = Object.fromEntries(
+  CAT_LIST.map((c) => [c.label, c.color])
+);
 
 const CATEGORY_NAMES = CAT_LIST.map((c) => c.label);
 
@@ -55,14 +43,21 @@ export function TransactionItem({ tx, symbol }: Props) {
     },
   });
 
-  const icon = CATEGORY_ICONS[tx.category || ""] || (tx.type === "income" ? "💰" : "💳");
   const isIncome = tx.type === "income";
   const date = new Date(tx.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 
+  const IconComponent = CATEGORY_ICON_MAP[tx.category || ""] || DollarSign;
+  const iconColor = isIncome
+    ? "text-emerald-500"
+    : CATEGORY_COLOR_MAP[tx.category || ""] || "text-gray-400";
+  const iconBg = isIncome
+    ? "bg-emerald-50 dark:bg-emerald-900/20"
+    : "bg-gray-100 dark:bg-gray-700";
+
   return (
     <div className="flex items-center gap-3 py-3 border-b border-gray-100 dark:border-gray-700/60 last:border-0 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors rounded-xl px-1 -mx-1">
-      <div className="w-10 h-10 rounded-xl bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-xl flex-shrink-0">
-        {icon}
+      <div className={`w-10 h-10 rounded-xl ${iconBg} flex items-center justify-center flex-shrink-0`}>
+        <IconComponent size={18} className={iconColor} />
       </div>
 
       <div className="flex-1 min-w-0">
