@@ -15,6 +15,7 @@ interface Props {
   symbol: string;
   categories?: { category: string; this_month: number; last_month: number }[];
   viewMode?: "monthly" | "yearly" | "alltime";
+  profileIncome?: number | null;
 }
 
 
@@ -30,15 +31,21 @@ function Card({ title, value, sub, cls, textCls, subCls }: {
   );
 }
 
-export function SummaryCards({ data, symbol, categories, viewMode = "monthly" }: Props) {
+const INVEST_CATS = new Set(["Investments","SIP","Stocks","Index Fund","ETF","REIT","Bonds","Gold / Silver","Crypto","PPF / EPF","FD","NPS"]);
+
+export function SummaryCards({ data, symbol, categories, viewMode = "monthly", profileIncome }: Props) {
   const fmt = (n: number) => `${symbol}${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
 
   // Savings rate — use user-defined target from settings
   const savingsTarget = parseInt(localStorage.getItem("finbuddy_savings_target") || "20");
-  const savingsPct = Math.round(data.savings_rate * 100);
+  // Fall back to profile monthly_income when no income transaction is logged
+  const effectiveIncome = data.total_income > 0 ? data.total_income : (viewMode === "monthly" ? (profileIncome ?? 0) : 0);
+  const savingsPct = effectiveIncome > 0
+    ? Math.round(((effectiveIncome - data.total_expense) / effectiveIncome) * 100)
+    : Math.round(data.savings_rate * 100);
 
   const investments = categories
-    ? categories.filter((c) => c.category === "Investments").reduce((sum, c) => sum + c.this_month, 0)
+    ? categories.filter((c) => INVEST_CATS.has(c.category)).reduce((sum, c) => sum + c.this_month, 0)
     : 0;
 
   // A1: Daily avg — use backend last_month_expense with actual last-month day count

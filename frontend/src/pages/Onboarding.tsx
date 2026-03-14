@@ -235,11 +235,19 @@ export function Onboarding() {
           frequency: sip.frequency.toLowerCase(),
         });
       }
+      // Immediately create this month's transactions from the templates we just saved
+      await api.profile.processRecurring().catch(() => {});
     },
     onSuccess: () => {
       qc.setQueryData(["profile"], (old: Record<string, unknown> | undefined) =>
         old ? { ...old, onboarding_completed: true } : { onboarding_completed: true }
       );
+      // Invalidate dashboard data so Rent/EMI/SIP appear immediately
+      qc.invalidateQueries({ queryKey: ["summary"] });
+      qc.invalidateQueries({ queryKey: ["categories"] });
+      qc.invalidateQueries({ queryKey: ["latest-month"] });
+      qc.invalidateQueries({ queryKey: ["health-score"] });
+      qc.invalidateQueries({ queryKey: ["transactions"] });
       setStep("done");
     },
   });

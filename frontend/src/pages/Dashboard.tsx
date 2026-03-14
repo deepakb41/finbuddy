@@ -192,7 +192,7 @@ export function Dashboard() {
             ))}
           </div>
         ) : summary ? (
-          <SummaryCards data={summary} currency={currency} symbol={symbol} categories={categories} viewMode={viewMode} />
+          <SummaryCards data={summary} currency={currency} symbol={symbol} categories={categories} viewMode={viewMode} profileIncome={profile?.monthly_income} />
         ) : null}
 
         {/* Spending by Category */}

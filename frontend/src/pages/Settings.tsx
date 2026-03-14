@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   User, DollarSign, Target, Repeat,
   TrendingUp, Download, LogOut,
-  ChevronRight, Pencil, Trash2, Bell, X, Check, Sparkles,
+  ChevronRight, Pencil, Trash2, Bell, X, Check,
 } from "lucide-react";
 import { api } from "../api/client";
 import { useAuth } from "../hooks/useAuth";
@@ -510,18 +510,6 @@ export function Settings() {
             </>
           )}
 
-          {/* Re-onboard */}
-          <button type="button" onClick={() => navigate("/onboarding")}
-            className={`${rowCls} w-full hover:bg-gray-50 dark:hover:bg-gray-700/40 transition-colors border-t border-gray-50 dark:border-gray-700/50`}>
-            <div className={iconWrap("bg-teal-50 dark:bg-teal-900/20")}>
-              <Sparkles size={16} className="text-teal-600 dark:text-teal-400" />
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-sm text-gray-800 dark:text-gray-100">Update financial setup</p>
-              <p className="text-xs text-gray-400 dark:text-gray-500">Re-run setup to update income, rent, EMIs & SIPs</p>
-            </div>
-            <ChevronRight size={16} className="text-gray-300 dark:text-gray-600" />
-          </button>
         </div>
 
         {/* ── Data ── */}

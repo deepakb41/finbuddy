@@ -112,8 +112,15 @@ export function Insights() {
       })()
     : null;
 
-  const investBody = hasData
+  const investBody = hasData && categories
     ? (() => {
+        const INVEST_CATS = new Set(["Investments","SIP","Stocks","Index Fund","ETF","REIT","Bonds","Gold / Silver","Crypto","PPF / EPF","FD","NPS"]);
+        const investData = categories.filter(c => INVEST_CATS.has(c.category) && c.this_month > 0);
+        const totalInvested = investData.reduce((s, c) => s + c.this_month, 0);
+        if (totalInvested > 0) {
+          const top = [...investData].sort((a, b) => b.this_month - a.this_month)[0];
+          return `You invested ${symbol}${totalInvested.toLocaleString("en-IN", { maximumFractionDigits: 0 })} this month. Top: ${top.category} (${symbol}${top.this_month.toLocaleString("en-IN", { maximumFractionDigits: 0 })}).`;
+        }
         const surplus = summary.total_income - summary.total_expense;
         if (surplus <= 0) return null;
         const investAmt = surplus * 0.2;

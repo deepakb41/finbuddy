@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
-import { QueryClient, QueryClientProvider, useQuery } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, useQuery, useQueryClient } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
 import { BottomNav } from "./components/layout/BottomNav";
 import { TopHeader } from "./components/layout/TopHeader";
@@ -21,9 +21,21 @@ const queryClient = new QueryClient({
 });
 
 function useAutoProcessRecurring() {
+  const qc = useQueryClient();
   useEffect(() => {
-    // Idempotent — safe to call every app open
-    api.profile.processRecurring().catch(() => {/* silent */});
+    api.profile.processRecurring()
+      .then((result) => {
+        if (result.count > 0) {
+          // New transactions were created — refresh all chart data
+          qc.invalidateQueries({ queryKey: ["summary"] });
+          qc.invalidateQueries({ queryKey: ["categories"] });
+          qc.invalidateQueries({ queryKey: ["latest-month"] });
+          qc.invalidateQueries({ queryKey: ["health-score"] });
+          qc.invalidateQueries({ queryKey: ["transactions"] });
+        }
+      })
+      .catch(() => {/* silent */});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 }
 
